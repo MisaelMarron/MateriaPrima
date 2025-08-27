@@ -5,3 +5,5 @@ env/
 # IDE
 .vscode/
 
+# python
+__pycache__/
