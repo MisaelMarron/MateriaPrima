@@ -1,0 +1,6 @@
+# entorno virtual
+myenv/
+env/
+
+# IDE
+.vscode/
