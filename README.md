@@ -2,15 +2,14 @@
 
 ## MateriaPrima 
 (PK) codigo (unico) 
-Nombre = String 
-Cantidad en Kg = decimal con 5 digitos
+nombre = String 
+cantidad (Kg) = decimal con 5 digitos
 
-## Formula
+## ProductoTerminado
 (PK) codigo (unico)
-version = entero
-Nombre = String 
+nombre = String 
 
-## MateriaFormula
+## DetalleProducto
 (PK) codigoMateriaPrima = **MateriaPrima**
-(PK) codigoFormula = **Formula**
-Cantidad por cada Kg = decimal con 5 digitos
+(PK) codigoProductoTerminado = **ProductoTerminado**
+cantidad (Kg) = decimal con 5 digitos
