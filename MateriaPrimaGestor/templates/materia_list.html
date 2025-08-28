@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %} Titulo {% endblock %}
+
+{% block content %}
+<h2>Lista de Materias Primas</h2>
+<a href="{% url 'materia_create' %}">➕ Nueva Materia Prima</a>
+
+<ul>
+    {% for m in materias %}
+    <li>
+        {{ m.codigo }} - {{ m.nombre }} ({{ m.cantidad }})
+        <a href="{% url 'materia_update' m.codigo %}">✏️ Editar</a>
+        <a href="{% url 'materia_delete' m.codigo %}">🗑️ Eliminar</a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

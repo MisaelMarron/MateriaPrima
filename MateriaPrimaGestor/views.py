@@ -1,8 +1,10 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout
-from django.contrib.auth.models import User
 from django.contrib import messages
+from .models import MateriaPrima
+from .forms import MateriaPrimaForm
 
 def inicio(request):
     return render(request, "inicio.html")
@@ -44,3 +46,48 @@ def logout_view(request):
     logout(request)
     messages.info(request, "Sesión cerrada correctamente 👋")
     return redirect("inicio")
+
+############## CRUDD de MateriaPrima
+
+# LISTAR
+@login_required
+def materia_list(request):
+    materias = MateriaPrima.objects.all()
+    return render(request, "materia_list.html", {"materias": materias})
+
+# CREAR
+@login_required
+def materia_create(request):
+    if request.method == "POST":
+        form = MateriaPrimaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Materia Prima creada ✅")
+            return redirect("materia_list")
+    else:
+        form = MateriaPrimaForm()
+    return render(request, "materia_form.html", {"form": form})
+
+# EDITAR
+@login_required
+def materia_update(request, codigo):
+    materia = get_object_or_404(MateriaPrima, codigo=codigo)
+    if request.method == "POST":
+        form = MateriaPrimaForm(request.POST, instance=materia)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Materia Prima actualizada ✏️")
+            return redirect("materia_list")
+    else:
+        form = MateriaPrimaForm(instance=materia)
+    return render(request, "materia_form.html", {"form": form})
+
+# ELIMINAR
+@login_required
+def materia_delete(request, codigo):
+    materia = get_object_or_404(MateriaPrima, codigo=codigo)
+    if request.method == "POST":
+        materia.delete()
+        messages.success(request, "Materia Prima eliminada ❌")
+        return redirect("materia_list")
+    return render(request, "materia_confirm_delete.html", {"materia": materia})
