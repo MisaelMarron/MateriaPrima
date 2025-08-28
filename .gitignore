@@ -1,9 +1,19 @@
 # entorno virtual
 myenv/
 env/
+venv/
 
 # IDE
 .vscode/
 
 # python
 __pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Django
+db.sqlite3
+
+# Logs
+*.log
