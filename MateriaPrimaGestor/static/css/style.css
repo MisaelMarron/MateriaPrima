@@ -1,80 +1,173 @@
+/* ====== TIPOGRAFÍA GLOBAL ====== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-.form-container {
-  max-width: 400px;
-  margin: 40px auto;
+body {
+  font-family: 'Inter', sans-serif;
+  background: #f5f7fa; /* gris claro neutro */
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 2rem;
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  color: #1f2937; /* gris oscuro */
 }
 
+/* ====== CONTENEDOR ====== */
+.form-container {
+  max-width: 420px;
+  width: 100%;
+  padding: 2.2rem;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  animation: fadeIn 0.9s ease forwards;
+}
 
+/* Animación sutil */
+@keyframes fadeIn {
+  from {
+    transform: translateY(25px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ====== TÍTULO ====== */
 .form-title {
   text-align: center;
   font-size: 1.8rem;
-  font-weight: bold;
-  margin-bottom: 1.5rem;
-  color: #333;
+  font-weight: 700;
+  margin-bottom: 1.6rem;
+  color: #111827;
 }
 
+.form-title::after {
+  content: "";
+  display: block;
+  width: 50px;
+  height: 3px;
+  margin: 0.5rem auto 0;
+  background: #18811d; /* verde corporativo */
+  border-radius: 3px;
+}
 
+/* ====== CAMPOS DEL FORM ====== */
 .form-box p {
-  margin-bottom: 1rem;
+  margin-bottom: 1.1rem;
 }
 
 .form-box label {
   display: block;
   font-weight: 600;
-  margin-bottom: 0.3rem;
-  color: #444;
+  margin-bottom: 0.4rem;
+  color: #374151;
+  font-size: 0.9rem;
 }
 
 .form-box input {
   width: 100%;
-  padding: 0.6rem;
-  border: 1px solid #ddd;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
   border-radius: 8px;
-  font-size: 1rem;
-  transition: border 0.2s ease;
+  font-size: 0.95rem;
+  background: #f9fafb;
+  transition: all 0.25s ease;
 }
 
 .form-box input:focus {
-  border-color: #2563eb;
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(37,99,235,0.2);
+  border-color: #18811d;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(24, 129, 29, 0.15);
 }
 
-
+/* ====== BOTÓN ====== */
 .btn-primary {
   width: 100%;
-  padding: 0.8rem;
-  background-color: #2563eb;
+  padding: 0.85rem;
+  background: #18811d;
   color: white;
   font-weight: 600;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(24, 129, 29, 0.3);
 }
 
 .btn-primary:hover {
-  background-color: #1d4ed8;
+  background: #146a18; /* tono más oscuro */
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(24, 129, 29, 0.4);
 }
 
+.btn-primary:active {
+  transform: scale(0.97);
+}
 
+/* ====== ENLACES ====== */
 .form-link {
   text-align: center;
-  margin-top: 1rem;
-  font-size: 0.95rem;
+  margin-top: 1.4rem;
+  font-size: 0.9rem;
   color: #555;
 }
 
 .form-link a {
-  color: #2563eb;
+  color: #18811d;
   font-weight: 600;
   text-decoration: none;
+  transition: color 0.3s ease;
 }
 
 .form-link a:hover {
+  color: #146a18;
   text-decoration: underline;
+}
+
+/* ===== NAVBAR ===== */
+.navbar {
+  width: 100%;
+  background: #fff; /* barra limpia */
+  padding: 0.8rem 2rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-logo a {
+  color: #18811d;
+  font-weight: 700;
+  font-size: 1.2rem;
+  text-decoration: none;
+}
+
+.nav-links a {
+  margin-left: 1.5rem;
+  color: #374151;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.nav-links a:hover {
+  color: #18811d;
+}
+
+/* Para que el formulario no quede escondido detrás del navbar */
+main {
+  margin-top: 80px;
 }

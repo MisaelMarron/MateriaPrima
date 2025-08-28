@@ -12,7 +12,8 @@ __pycache__/
 *.pyo
 *.pyd
 
-# Django
+
+*.sqlite3
 db.sqlite3
 
 # Logs
