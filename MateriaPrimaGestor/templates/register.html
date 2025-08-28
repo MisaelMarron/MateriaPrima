@@ -1,12 +1,16 @@
 {% extends "base.html" %}
-{% block title %} Titulo {% endblock %}
+{% block title %} Registro {% endblock %}
 
 {% block content %}
-<h2>Registro</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Registrarse</button>
-</form>
-<a href="{% url 'login' %}">Ya tengo cuenta</a>
+<div class="form-container">
+    <h2 class="form-title">Registro</h2>
+    <form method="post" class="form-box">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn-primary">Registrarse</button>
+    </form>
+    <p class="form-link">
+        ¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia sesión</a>
+    </p>
+</div>
 {% endblock %}
