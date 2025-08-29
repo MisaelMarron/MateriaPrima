@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout
 from django.contrib import messages
 from .models import MateriaPrima
-from .forms import MateriaPrimaForm
+from .forms import MateriaPrimaForm, AjusteCantidadForm
 
 def inicio(request):
     return render(request, "inicio.html")
@@ -72,15 +72,24 @@ def materia_create(request):
 @login_required
 def materia_update(request, codigo):
     materia = get_object_or_404(MateriaPrima, codigo=codigo)
+
     if request.method == "POST":
-        form = MateriaPrimaForm(request.POST, instance=materia)
+        form = AjusteCantidadForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Materia Prima actualizada ✏️")
-            return redirect("materia_list")
+            ajuste = form.cleaned_data["ajuste"]
+            nueva_cantidad = materia.cantidad + ajuste
+
+            if nueva_cantidad < 0:
+                messages.error(request, "No puedes dejar la cantidad en negativo ❌")
+            else:
+                materia.cantidad = nueva_cantidad
+                materia.save()
+                messages.success(request, f"Cantidad actualizada a {materia.cantidad} ✅")
+                return redirect("materia_list")
     else:
-        form = MateriaPrimaForm(instance=materia)
-    return render(request, "materia_form.html", {"form": form})
+        form = AjusteCantidadForm()
+
+    return render(request, "materia_form.html", {"form": form, "materia": materia})
 
 # ELIMINAR
 @login_required

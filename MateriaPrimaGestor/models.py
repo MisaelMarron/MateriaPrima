@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 
 class MateriaPrima(models.Model):
     codigo = models.CharField(max_length=20, unique=True, primary_key=True)
@@ -7,6 +8,10 @@ class MateriaPrima(models.Model):
 
     def __str__(self):
         return f"{self.codigo} - {self.nombre}"
+    
+    def clean(self):
+        if self.cantidad <= 0:
+            raise ValidationError("La cantidad debe ser positiva")
     
 class ProductoTerminado(models.Model):
     codigo = models.CharField(max_length=20, unique=True, primary_key=True)
