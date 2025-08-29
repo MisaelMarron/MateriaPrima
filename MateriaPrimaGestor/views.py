@@ -47,7 +47,7 @@ def logout_view(request):
     messages.info(request, "Sesión cerrada correctamente 👋")
     return redirect("inicio")
 
-############## CRUDD de MateriaPrima
+############## CRUD de MateriaPrima
 
 # LISTAR
 @login_required

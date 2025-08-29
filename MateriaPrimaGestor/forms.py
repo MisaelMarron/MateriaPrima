@@ -1,7 +1,7 @@
 from django import forms
 from .models import MateriaPrima
 
-# formulario
+# formulario para Materia Prima
 class MateriaPrimaForm(forms.ModelForm):
     class Meta:
         model = MateriaPrima
