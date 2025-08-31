@@ -37,4 +37,4 @@ class DetalleProducto(models.Model):
         unique_together = ("codigoMateriaPrima", "codigoProductoTerminado")
 
     def __str__(self):
-        return f"{self.codigoProductoTerminado.nombre} usa {self.cantidad} Kg de {self.codigoMateriaPrima.nombre}"
+        return f"{self.codigoProductoTerminado.nombre} usa {self.cantidad} de {self.codigoMateriaPrima.nombre}"
