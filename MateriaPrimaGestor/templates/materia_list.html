@@ -4,14 +4,35 @@
 {% block content %}
 <h2>Lista de Materias Primas</h2>
 <a href="{% url 'materia_create' %}">➕ Nueva Materia Prima</a>
-
-<ul>
-    {% for m in materias %}
-    <li>
-        {{ m.codigo }} - {{ m.nombre }} ({{ m.cantidad }})
-        <a href="{% url 'materia_update' m.codigo %}">✏️ Editar</a>
-        <a href="{% url 'materia_delete' m.codigo %}">🗑️ Eliminar</a>
-    </li>
-    {% endfor %}
-</ul>
+<table border="1" cellpadding="5" cellspacing="0">
+    <thead>
+        <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Cantidad</th>
+            <th>Unidad</th>
+            <th>Última Actualización</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for m in materias %}
+        <tr>
+            <td>{{ m.codigo }}</td>
+            <td>{{ m.nombre }}</td>
+            <td>{{ m.cantidad }}</td>
+            <td>{{ m.unidad }}</td>
+            <td>{{ m.ultima_vez_actualizado|date:"d/m/Y H:i" }}</td>
+            <td>
+                <a href="{% url 'materia_update' m.codigo %}">➕ Agregar</a> |
+                <a href="{% url 'materia_delete' m.codigo %}">🗑️ Eliminar</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6">No hay materias primas registradas.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 {% endblock %}

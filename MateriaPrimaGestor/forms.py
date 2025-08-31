@@ -5,11 +5,10 @@ from .models import MateriaPrima
 class MateriaPrimaForm(forms.ModelForm):
     class Meta:
         model = MateriaPrima
-        fields = ["codigo", "nombre", "cantidad"]
+        fields = ["codigo", "nombre", "unidad"]
 
 class AjusteCantidadForm(forms.Form):
-    ajuste = forms.DecimalField(
+    agregar = forms.DecimalField(
         max_digits=20,
-        decimal_places=5,
-        help_text="Ingresa un número positivo para agregar, negativo para quitar"
+        decimal_places=5
     )
