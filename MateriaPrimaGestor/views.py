@@ -53,7 +53,7 @@ def logout_view(request):
 @login_required
 def materia_list(request):
     materias = MateriaPrima.objects.all()
-    return render(request, "materia_list.html", {"materias": materias})
+    return render(request, "materia/materia_list.html", {"materias": materias})
 
 # CREAR
 @login_required
@@ -66,7 +66,7 @@ def materia_create(request):
             return redirect("materia_list")
     else:
         form = MateriaPrimaForm()
-    return render(request, "materia_form.html", {"form": form})
+    return render(request, "materia/materia_form.html", {"form": form})
 
 # AGREGAR 
 @login_required
@@ -89,7 +89,7 @@ def materia_update(request, codigo):
     else:
         form = AjusteCantidadForm()
 
-    return render(request, "materia_form.html", {"form": form, "materia": materia})
+    return render(request, "materia/materia_form.html", {"form": form, "materia": materia})
 
 # ELIMINAR
 @login_required
@@ -99,14 +99,14 @@ def materia_delete(request, codigo):
         messages.success(request, f"Materia Prima eliminada: {materia.codigo} - {materia.nombre}")
         materia.delete()
         return redirect("materia_list")
-    return render(request, "materia_confirm_delete.html", {"materia": materia})
+    return render(request, "materia/materia_confirm_delete.html", {"materia": materia})
 
 
 ############## CRUD de ProductoTerminado
 # LISTAR
 def producto_list(request):
     productos = ProductoTerminado.objects.all()
-    return render(request, "producto_list.html", {"productos": productos})
+    return render(request, "producto/producto_list.html", {"productos": productos})
 
 # CREAR
 def producto_create(request):
@@ -117,7 +117,7 @@ def producto_create(request):
             return redirect("producto_list")
     else:
         form = ProductoTerminadoForm()
-    return render(request, "producto_form.html", {"form": form})
+    return render(request, "producto/producto_form.html", {"form": form})
 
 # EDITAR
 def producto_update(request, codigo):
@@ -129,7 +129,7 @@ def producto_update(request, codigo):
             return redirect("producto_list")
     else:
         form = ProductoTerminadoForm(instance=producto)
-    return render(request, "producto_form.html", {"form": form})
+    return render(request, "producto/producto_form.html", {"form": form})
 
 # ELIMINAR
 def producto_delete(request, codigo):
@@ -137,4 +137,4 @@ def producto_delete(request, codigo):
     if request.method == "POST":
         producto.delete()
         return redirect("producto_list")
-    return render(request, "producto_confirm_delete.html", {"producto": producto})
+    return render(request, "producto/producto_confirm_delete.html", {"producto": producto})
