@@ -11,6 +11,9 @@
         <a href="{% url 'producto_update' p.codigo %}">✏️ Editar</a>
         <a href="{% url 'producto_delete' p.codigo %}">🗑️ Eliminar</a>
     </li>
+    {% empty %}
+    <li>No hay productos registrados.</li>
     {% endfor %}
 </ul>
+
 {% endblock %}

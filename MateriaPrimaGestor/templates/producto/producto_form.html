@@ -2,11 +2,54 @@
 {% block title %} Titulo {% endblock %}
 
 {% block content %}
-<h1>Formulario Producto</h1>
+<h1>{% if form.instance.pk %}Editar{% else %}Nuevo{% endif %} Producto</h1>
+
 <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
+
+    <fieldset>
+        <legend>Datos del producto</legend>
+        {{ form.as_p }}
+    </fieldset>
+
+    <fieldset>
+        <legend>Materias primas</legend>
+        {{ formset.management_form }}
+        <table border="1">
+            <tr>
+                <th>Materia Prima</th>
+                <th>Cantidad</th>
+                <th>Eliminar</th>
+            </tr>
+            {% for f in formset %}
+            <tr>
+                <td>{{ f.codigoMateriaPrima }}</td>
+                <td>{{ f.cantidad }}</td>
+                <td>
+                    {% if f.instance.pk %}
+                    {{ f.DELETE }}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        <button type="button" onclick="addForm()">➕ Añadir fila</button>
+    </fieldset>
+
     <button type="submit">Guardar</button>
 </form>
 <a href="{% url 'producto_list' %}">⬅ Volver</a>
+
+<script>
+    function addForm() {
+        // clona el último formulario del formset
+        const totalForms = document.getElementById('id_detalleproducto_set-TOTAL_FORMS');
+        const currentCount = parseInt(totalForms.value);
+        const newForm = document.querySelector('table tr:last-child').cloneNode(true);
+        newForm.innerHTML = newForm.innerHTML.replace(/-\d+-/g, `-${currentCount}-`);
+        document.querySelector('table').appendChild(newForm);
+        totalForms.value = currentCount + 1;
+    }
+</script>
+
 {% endblock %}

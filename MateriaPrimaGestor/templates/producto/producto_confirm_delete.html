@@ -4,9 +4,8 @@
 {% block content %}
 <h1>¿Eliminar {{ producto.nombre }}?</h1>
 <form method="post">
-    {% csrf_token %}
-    <button type="submit">Sí, eliminar</button>
+  {% csrf_token %}
+  <button type="submit">Sí, eliminar</button>
 </form>
 <a href="{% url 'producto_list' %}">Cancelar</a>
-
 {% endblock %}

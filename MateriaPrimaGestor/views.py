@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout
 from django.contrib import messages
 from .models import MateriaPrima, ProductoTerminado
-from .forms import MateriaPrimaForm, AjusteCantidadForm, ProductoTerminadoForm
+from .forms import MateriaPrimaForm, AjusteCantidadForm, ProductoTerminadoForm, DetalleProductoFormSet
 
 def inicio(request):
     return render(request, "inicio.html")
@@ -112,24 +112,31 @@ def producto_list(request):
 def producto_create(request):
     if request.method == "POST":
         form = ProductoTerminadoForm(request.POST)
-        if form.is_valid():
-            form.save()
+        formset = DetalleProductoFormSet(request.POST, instance=ProductoTerminado())
+        if form.is_valid() and formset.is_valid():
+            producto = form.save()
+            formset.instance = producto
+            formset.save()
             return redirect("producto_list")
     else:
         form = ProductoTerminadoForm()
-    return render(request, "producto/producto_form.html", {"form": form})
+        formset = DetalleProductoFormSet(instance=ProductoTerminado())
+    return render(request, "producto/producto_form.html", {"form": form, "formset": formset})
 
 # EDITAR
 def producto_update(request, codigo):
     producto = get_object_or_404(ProductoTerminado, pk=codigo)
     if request.method == "POST":
         form = ProductoTerminadoForm(request.POST, instance=producto)
-        if form.is_valid():
+        formset = DetalleProductoFormSet(request.POST, instance=producto)
+        if form.is_valid() and formset.is_valid():
             form.save()
+            formset.save()
             return redirect("producto_list")
     else:
         form = ProductoTerminadoForm(instance=producto)
-    return render(request, "producto/producto_form.html", {"form": form})
+        formset = DetalleProductoFormSet(instance=producto)
+    return render(request, "producto/producto_form.html", {"form": form, "formset": formset})
 
 # ELIMINAR
 def producto_delete(request, codigo):
