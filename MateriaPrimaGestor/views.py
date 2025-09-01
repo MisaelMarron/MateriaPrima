@@ -3,8 +3,8 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout
 from django.contrib import messages
-from .models import MateriaPrima
-from .forms import MateriaPrimaForm, AjusteCantidadForm
+from .models import MateriaPrima, ProductoTerminado
+from .forms import MateriaPrimaForm, AjusteCantidadForm, ProductoTerminadoForm
 
 def inicio(request):
     return render(request, "inicio.html")
@@ -100,3 +100,41 @@ def materia_delete(request, codigo):
         materia.delete()
         return redirect("materia_list")
     return render(request, "materia_confirm_delete.html", {"materia": materia})
+
+
+############## CRUD de ProductoTerminado
+# LISTAR
+def producto_list(request):
+    productos = ProductoTerminado.objects.all()
+    return render(request, "producto_list.html", {"productos": productos})
+
+# CREAR
+def producto_create(request):
+    if request.method == "POST":
+        form = ProductoTerminadoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("producto_list")
+    else:
+        form = ProductoTerminadoForm()
+    return render(request, "producto_form.html", {"form": form})
+
+# EDITAR
+def producto_update(request, codigo):
+    producto = get_object_or_404(ProductoTerminado, pk=codigo)
+    if request.method == "POST":
+        form = ProductoTerminadoForm(request.POST, instance=producto)
+        if form.is_valid():
+            form.save()
+            return redirect("producto_list")
+    else:
+        form = ProductoTerminadoForm(instance=producto)
+    return render(request, "producto_form.html", {"form": form})
+
+# ELIMINAR
+def producto_delete(request, codigo):
+    producto = get_object_or_404(ProductoTerminado, pk=codigo)
+    if request.method == "POST":
+        producto.delete()
+        return redirect("producto_list")
+    return render(request, "producto_confirm_delete.html", {"producto": producto})
