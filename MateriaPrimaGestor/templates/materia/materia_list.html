@@ -1,38 +1,45 @@
 {% extends "base.html" %}
-{% block title %} Titulo {% endblock %}
+{% block title %} Materias Primas {% endblock %}
 
 {% block content %}
-<h2>Lista de Materias Primas</h2>
-<a href="{% url 'materia_create' %}">➕ Nueva Materia Prima</a>
-<table border="1" cellpadding="5" cellspacing="0">
-    <thead>
-        <tr>
-            <th>Código</th>
-            <th>Nombre</th>
-            <th>Cantidad</th>
-            <th>Unidad</th>
-            <th>Última Actualización</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for m in materias %}
-        <tr>
-            <td>{{ m.codigo }}</td>
-            <td>{{ m.nombre }}</td>
-            <td>{{ m.cantidad }}</td>
-            <td>{{ m.unidad }}</td>
-            <td>{{ m.ultima_vez_actualizado|date:"d/m/Y H:i" }}</td>
-            <td>
-                <a href="{% url 'materia_update' m.codigo %}">➕ Agregar</a> |
-                <a href="{% url 'materia_delete' m.codigo %}">🗑️ Eliminar</a>
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="6">No hay materias primas registradas.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="materia-container">
+    <div class="materia-header">
+        <h2>Lista de Materias Primas</h2>
+        <a href="{% url 'materia_create' %}" class="btn-add">➕ Nueva Materia Prima</a>
+    </div>
+
+    <div class="materia-table-wrapper">
+        <table class="materia-table">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Cantidad</th>
+                    <th>Unidad</th>
+                    <th>Última Actualización</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in materias %}
+                <tr>
+                    <td>{{ m.codigo }}</td>
+                    <td>{{ m.nombre }}</td>
+                    <td>{{ m.cantidad }}</td>
+                    <td>{{ m.unidad }}</td>
+                    <td>{{ m.ultima_vez_actualizado|date:"d/m/Y H:i" }}</td>
+                    <td class="acciones">
+                        <a href="{% url 'materia_update' m.codigo %}" class="btn-edit">Agregar</a>
+                        <a href="{% url 'materia_delete' m.codigo %}" class="btn-delete">Eliminar</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="no-data">⚠️ No hay materias primas registradas.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}

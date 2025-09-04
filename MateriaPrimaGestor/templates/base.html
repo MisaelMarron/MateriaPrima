@@ -11,12 +11,12 @@
 
 <body>
     {% if messages %}
-    <div class="messages">
-        {% for message in messages %}
-        <div class="alert {{ message.tags }}">
-            {{ message }}
-        </div>
-        {% endfor %}
+    <div id="messages-container" class="messages">
+    {% for message in messages %}
+    <div class="alert {{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
     </div>
     {% endif %}
     <nav class="navbar">
@@ -40,6 +40,19 @@
     <main>
         {% block content %}{% endblock %}
     </main>
+    <script>
+  window.addEventListener("DOMContentLoaded", () => {
+    const container = document.getElementById("messages-container");
+    if (container) {
+      container.classList.add("show"); 
+      setTimeout(() => {
+        container.style.transition = "top 0.5s ease-in-out, opacity 0.5s";
+        container.style.opacity = "0";
+        container.style.top = "-100px";
+      }, 3000);
+    }
+  });
+</script>
 </body>
 
 </html>

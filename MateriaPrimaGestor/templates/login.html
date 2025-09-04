@@ -4,12 +4,23 @@
 {% block content %}
 <div class="form-container">
     <h2 class="form-title">Iniciar Sesión</h2>
-    <form method="post" class="form-form">
+    <form method="post" class="form-box">
         {% csrf_token %}
-        {{ form.as_p }}
+
+        <div class="input-group">
+            {{ form.username }}
+            <label for="{{ form.username.id_for_label }}">Nombre de usuario</label>
+        </div>
+
+        <div class="input-group">
+            {{ form.password }}
+            <label for="{{ form.password.id_for_label }}">Contraseña</label>
+        </div>
+
         <button type="submit" class="btn-primary">Entrar</button>
     </form>
-    <p class="register-link">
+
+    <p class="form-link">
         ¿No tienes cuenta? <a href="{% url 'register' %}">Registrarme</a>
     </p>
 </div>

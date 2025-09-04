@@ -1,14 +1,39 @@
 {% extends "base.html" %}
-{% block title %} Titulo {% endblock %}
+{% block title %} Materia Prima {% endblock %}
 
 {% block content %}
-<h2>{% if form.instance.pk %}Editar{% else %}Nueva{% endif %} Materia Prima</h2>
+<div class="form-container">
+  <h2 class="form-title">
+    {% if form.instance.pk %}✏️ Editar{% else %}➕ Agregar{% endif %} Materia
+  </h2>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Guardar</button>
-</form>
+  <form method="post" class="materia-form">
+      {% csrf_token %}
 
-<a href="{% url 'materia_list' %}">⬅️ Volver</a>
+      {{ form.non_field_errors }}
+      {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+
+      <div class="form-box">
+        {% for field in form.visible_fields %}
+          <div class="form-row">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.help_text %}
+              <small class="help">{{ field.help_text }}</small>
+            {% endif %}
+            {% if field.errors %}
+              <div class="field-error">{{ field.errors|striptags }}</div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="acciones-form">
+        <button type="submit" class="btn-primary">
+          {% if form.instance.pk %}Guardar Cambios{% else %}Guardar{% endif %}
+        </button>
+        <a href="{% url 'materia_list' %}" class="btn-back">⬅️ Volver</a>
+      </div>
+  </form>
+</div>
 {% endblock %}

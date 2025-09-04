@@ -1,12 +1,14 @@
 {% extends "base.html" %}
-{% block title %} Titulo {% endblock %}
+{% block title %} Eliminar Materia {% endblock %}
 
 {% block content %}
-<h2>¿Eliminar {{ materia.nombre }}?</h2>
+<div class="materia-container">
+    <h2>⚠️ ¿Eliminar <span class="danger">{{ materia.nombre }}</span>?</h2>
 
-<form method="post">
-    {% csrf_token %}
-    <button type="submit">Sí, eliminar</button>
-    <a href="{% url 'materia_list' %}">Cancelar</a>
-</form>
+    <form method="post" class="delete-form">
+        {% csrf_token %}
+        <button type="submit" class="btn-delete-confirm">Sí, eliminar</button>
+        <a href="{% url 'materia_list' %}" class="btn-cancel">Cancelar</a>
+    </form>
+</div>
 {% endblock %}

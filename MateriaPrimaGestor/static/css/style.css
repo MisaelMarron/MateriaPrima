@@ -16,11 +16,108 @@ body {
 .form-container {
   max-width: 420px;
   width: 100%;
-  padding: 2.2rem;
+  padding: 2.2rem 3rem 2.2rem 2.2rem;
   background: #fff;
   border-radius: 14px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
   animation: fadeIn 0.9s ease forwards;
+}
+.form-box select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: #f9fafb;
+  transition: all 0.25s ease;
+}
+
+.form-box select:focus {
+  border-color: #18811d;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(24, 129, 29, 0.15);
+}
+
+/* ======  INPUTS ====== */
+.input-group {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 0.9rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: #f9fafb;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input-group input:focus {
+  border-color: #18811d;
+  box-shadow: 0 0 0 3px rgba(24, 129, 29, 0.15);
+  background: #fff;
+}
+/* Fila del campo */
+.form-row { margin-bottom: 1.1rem; }
+
+/* Asegura estilo uniforme a inputs/select/textarea del form dinámico */
+.form-box input,
+.form-box select,
+.form-box textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: #f9fafb;
+  transition: all 0.25s ease;
+}
+.form-box input:focus,
+.form-box select:focus,
+.form-box textarea:focus {
+  border-color: #18811d;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(24,129,29,0.15);
+}
+
+/* Errores de campo */
+.field-error {
+  margin-top: .35rem;
+  color: #b91c1c;
+  font-size: .85rem;
+}
+
+/* Alineación de botones */
+.acciones-form {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 1.2rem;
+}
+.acciones-form { margin-top: 0; }
+
+/* Label flotante */
+.input-group label {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  background: #fff;
+  padding: 0 4px;
+  font-size: 0.95rem;
+  color: #6b7280;
+  pointer-events: none;
+  transition: all 0.25s ease;
+}
+.input-group input:focus + label,
+.input-group input:not(:placeholder-shown) + label {
+  top: -8px;
+  left: 10px;
+  font-size: 0.75rem;
+  color: #18811d;
 }
 
 /* Animación sutil */
@@ -171,3 +268,283 @@ body {
 main {
   margin-top: 80px;
 }
+/* ====== ALERTAS ====== */
+.messages {
+  position: fixed;
+  top: -100px; /* Oculto inicialmente */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  opacity: 0;
+}
+
+.messages.show {
+  top: 20px; /* Se desplaza hacia abajo */
+  opacity: 1;
+  transition: top 0.5s ease-in-out, opacity 0.5s;
+}
+
+.alert {
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Colores según tipo de mensaje */
+.alert.success {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.alert.error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.alert.warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.alert.info {
+  background: #e0f2fe;
+  color: #075985;
+}
+/* ===== LISTA MATERIAS PRIMAS ===== */
+.materia-container {
+  max-width: 850px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  animation: fadeIn 0.8s ease;
+}
+
+.materia-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.materia-header h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.btn-add {
+  background: #2e7d32;
+  color: #fff;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: 0.3s;
+}
+.btn-add:hover {
+  background: #256828;
+  transform: translateY(-2px);
+}
+
+/* Tabla */
+.materia-table-wrapper {
+  overflow-x: auto;
+}
+.materia-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+.materia-table th,
+.materia-table td {
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid #ddd;
+}
+.materia-table th {
+  background: #f3f6f4;
+  font-weight: 600;
+  color: #333;
+}
+.materia-table tr:hover {
+  background: #f9fbf9;
+}
+.no-data {
+  text-align: center;
+  font-style: italic;
+  color: #777;
+}
+
+/* Botones de acciones */
+.acciones {
+  display: flex;
+  gap: 8px;              /* espacio entre botones */
+  justify-content: center; /* o flex-end si quieres a la derecha */
+  align-items: center;
+}
+
+.acciones a {
+  display: inline-block;  /* aseguramos que no se expanda en bloque */
+  padding: 6px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+.btn-edit {
+  background: #4caf50;
+  color: white;
+}
+.btn-delete {
+  background: #f44336;
+  color: white;
+}
+
+/* Formulario */
+.materia-form {
+  margin-top: 1.2rem;
+}
+.materia-form button {
+  margin-top: 1rem;
+}
+
+/* Botones de formulario */
+.btn-save {
+  background: #2e7d32;
+  color: #fff;
+  padding: 0.7rem 1.4rem;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.btn-save:hover {
+  background: #256828;
+}
+.btn-back {
+  display: inline-flex;       /* flex para alinear contenido */
+  align-items: center;        /* centra verticalmente */
+  gap: 6px;                   /* espacio entre flecha y texto */
+  font-size: 0.95rem;
+  color: #2e7d32;             /* verde corporativo */
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.btn-back:hover {
+  text-decoration: underline;
+}
+
+/* Confirmar eliminación */
+.delete-form {
+  margin-top: 1.5rem;
+}
+.btn-delete-confirm {
+  background: #d32f2f;
+  color: #fff;
+  padding: 0.7rem 1.2rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  margin-right: 0.5rem;
+  transition: 0.3s;
+}
+.btn-delete-confirm:hover {
+  background: #a82424;
+}
+.btn-cancel {
+  color: #555;
+  text-decoration: none;
+  font-weight: 500;
+}
+.btn-cancel:hover {
+  text-decoration: underline;
+}
+
+.danger {
+  color: #d32f2f;
+  font-weight: bold;
+}
+/* ====== PRODUCTO TERMINADO ====== */
+.producto-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 1.5rem;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+/* Tabla de productos */
+.producto-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  font-size: 0.95rem;
+}
+
+.producto-table th, 
+.producto-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.producto-table thead {
+  background-color: #f4f6f8;
+}
+
+.producto-table th {
+  font-weight: 600;
+  color: #333;
+}
+
+/* Acciones */
+.acciones {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* Botones */
+.btn-new, .btn-edit, .btn-delete, .btn-save {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.btn-new {
+  background: #1976d2;
+  color: #fff;
+}
+
+.btn-new:hover { background: #1565c0; }
+
+.btn-edit {
+  background: #4caf50;
+  color: #fff;
+}
+
+.btn-edit:hover { background: #43a047; }
+
+.btn-delete {
+  background: #f44336;
+  color: #fff;
+}
+
+.btn-delete:hover { background: #d32f2f; }
+
+.btn-save {
+  background: #1976d2;
+  color: #fff;
+}
+
+.btn-save:hover { background: #1565c0; }
+
+

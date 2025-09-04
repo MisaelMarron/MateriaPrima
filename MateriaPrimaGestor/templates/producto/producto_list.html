@@ -1,19 +1,35 @@
 {% extends "base.html" %}
-{% block title %} Titulo {% endblock %}
+{% block title %}Lista Productos{% endblock %}
 
 {% block content %}
-<h1>Lista de Productos Terminados</h1>
-<a href="{% url 'producto_create' %}">➕ Nuevo producto</a>
-<ul>
-    {% for p in productos %}
-    <li>
-        {{ p.codigo }} - {{ p.nombre }}
-        <a href="{% url 'producto_update' p.codigo %}">✏️ Editar</a>
-        <a href="{% url 'producto_delete' p.codigo %}">🗑️ Eliminar</a>
-    </li>
-    {% empty %}
-    <li>No hay productos registrados.</li>
-    {% endfor %}
-</ul>
+<div class="producto-container">
+  <h1>Lista de Productos Terminados</h1>
+  <a href="{% url 'producto_create' %}" class="btn-new">➕ Nuevo producto</a>
 
+  <table class="producto-table">
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Nombre</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in productos %}
+      <tr>
+        <td>{{ p.codigo }}</td>
+        <td>{{ p.nombre }}</td>
+        <td class="acciones">
+          <a href="{% url 'producto_update' p.codigo %}" class="btn-edit">✏️ Editar</a>
+          <a href="{% url 'producto_delete' p.codigo %}" class="btn-delete">🗑️ Eliminar</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="3">No hay productos registrados.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% endblock %}
