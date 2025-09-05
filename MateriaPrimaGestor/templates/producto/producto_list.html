@@ -22,6 +22,7 @@
         <td class="acciones">
           <a href="{% url 'producto_update' p.codigo %}" class="btn-edit">✏️ Editar</a>
           <a href="{% url 'producto_delete' p.codigo %}" class="btn-delete">🗑️ Eliminar</a>
+          <a href="{% url 'produccion_preview' p.codigo %}" class="btn-produce">⚙️ Producir</a>  
         </td>
       </tr>
       {% empty %}

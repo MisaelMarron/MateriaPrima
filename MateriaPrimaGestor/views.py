@@ -3,8 +3,11 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout
 from django.contrib import messages
-from .models import MateriaPrima, ProductoTerminado
-from .forms import MateriaPrimaForm, AjusteCantidadForm, ProductoTerminadoForm, DetalleProductoFormSet
+from .models import MateriaPrima, ProductoTerminado, Produccion, ConsumoMateriaPrima
+from .forms import MateriaPrimaForm, AjusteCantidadForm, ProductoTerminadoForm, DetalleProducto, DetalleProductoFormSet, ProduccionForm
+from .services import producir_producto
+from decimal import Decimal
+from django.core.exceptions import ValidationError
 
 def inicio(request):
     return render(request, "inicio.html")
@@ -145,3 +148,85 @@ def producto_delete(request, codigo):
         producto.delete()
         return redirect("producto_list")
     return render(request, "producto/producto_confirm_delete.html", {"producto": producto})
+
+
+@login_required
+def produccion_preview(request, codigo):
+    producto = get_object_or_404(ProductoTerminado, codigo=codigo)
+
+    if request.method == "POST":
+        form = ProduccionForm(request.POST)
+        if form.is_valid():
+            cantidad = form.cleaned_data["cantidad"]
+
+            # Preparamos la receta multiplicada
+            detalles = DetalleProducto.objects.filter(codigoProductoTerminado=producto)
+            consumos = []
+            faltante = False
+
+            for detalle in detalles:
+                requerido = detalle.cantidad * cantidad
+                disponible = detalle.codigoMateriaPrima.cantidad
+                consumos.append({
+                    "materia": detalle.codigoMateriaPrima,
+                    "requerido": requerido,
+                    "disponible": disponible,
+                    "suficiente": disponible >= requerido
+                })
+                if disponible < requerido:
+                    faltante = True
+
+            if faltante:
+                messages.error(request, "No hay suficiente materia prima para esta producción")
+            else:
+                return render(request, "produccion/produccion_confirm.html", {
+                    "producto": producto,
+                    "cantidad": cantidad,
+                    "consumos": consumos
+                })
+
+    else:
+        form = ProduccionForm()
+
+    return render(request, "produccion/produccion_form.html", {"form": form, "producto": producto})
+
+
+@login_required
+def produccion_confirm(request):
+    if request.method != "POST":
+        return redirect("producto_list")
+
+    codigo = request.POST.get("codigo")
+    cantidad = request.POST.get("cantidad")
+
+    if not codigo or not cantidad:
+        messages.error(request, "Faltan datos de producción")
+        return redirect("producto_list")
+
+    producto = get_object_or_404(ProductoTerminado, codigo=codigo)
+
+    try:
+        produccion = producir_producto(producto, Decimal(cantidad))
+        messages.success(request, f"Producción de {cantidad} {producto.nombre} registrada correctamente")
+        return redirect("produccion_detail", produccion.id)
+    except ValidationError as e:
+        messages.error(request, str(e))
+        return redirect("produccion_preview", codigo=producto.codigo)
+
+
+
+@login_required
+def produccion_list(request):
+    producciones = Produccion.objects.all().order_by("-fecha")
+    return render(request, "produccion/produccion_list.html", {"producciones": producciones})
+
+
+@login_required
+def produccion_detail(request, pk):
+    produccion = get_object_or_404(Produccion, pk=pk)
+    consumos = ConsumoMateriaPrima.objects.filter(produccion=produccion)
+
+    return render(request, "produccion/produccion_detail.html", {
+        "produccion": produccion,
+        "consumos": consumos
+    })

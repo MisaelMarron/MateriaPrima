@@ -38,3 +38,9 @@ DetalleProductoFormSet = inlineformset_factory(
     form=DetalleProductoForm,
     extra=1, can_delete=True
 )
+
+class ProduccionForm(forms.Form):
+    cantidad = forms.DecimalField(
+        max_digits=20, decimal_places=5, min_value=0.00001,
+        label="Cantidad a producir (kg)"
+    )
