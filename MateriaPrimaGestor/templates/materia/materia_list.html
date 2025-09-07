@@ -28,9 +28,11 @@
                     <td>{{ m.cantidad }}</td>
                     <td>{{ m.unidad }}</td>
                     <td>{{ m.ultima_vez_actualizado|date:"d/m/Y H:i" }}</td>
-                    <td class="acciones">
-                        <a href="{% url 'materia_update' m.codigo %}" class="btn-edit">Agregar</a>
-                        <a href="{% url 'materia_delete' m.codigo %}" class="btn-delete">Eliminar</a>
+                    <td>
+                        <div class="acciones">
+                            <a href="{% url 'materia_update' m.codigo %}" class="btn-edit">Agregar</a>
+                            <a href="{% url 'materia_delete' m.codigo %}" class="btn-delete">Eliminar</a>
+                        </div>
                     </td>
                 </tr>
                 {% empty %}

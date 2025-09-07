@@ -1,30 +1,41 @@
 {% extends "base.html" %}
-{% block title %} Titulo {% endblock %}
+{% block title %}Producción{% endblock %}
 
 {% block content %}
-<h2>Historial de Producción</h2>
+<div class="produccion-container">
+    <div class="produccion-header">
+        <h2>Lista de Producciones</h2>
+    </div>
 
-<table border="1">
-    <tr>
-        <th>ID</th>
-        <th>Producto</th>
-        <th>Cantidad producida</th>
-        <th>Fecha</th>
-        <th>Acciones</th>
-    </tr>
-    {% for p in producciones %}
-    <tr>
-        <td>{{ p.id }}</td>
-        <td>{{ p.producto.nombre }}</td>
-        <td>{{ p.cantidad_producida }} kg</td>
-        <td>{{ p.fecha|date:"d/m/Y H:i" }}</td>
-        <td><a href="{% url 'produccion_detail' p.id %}">Ver detalle</a></td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="5">No hay producciones registradas</td>
-    </tr>
-    {% endfor %}
-</table>
-
+    <div class="produccion-table-wrapper">
+        <table class="produccion-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Producto</th>
+                    <th>Cantidad producida</th>
+                    <th>Fecha</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in producciones %}
+                <tr>
+                    <td>{{ p.id }}</td>
+                    <td>{{ p.producto.nombre }}</td>
+                    <td>{{ p.cantidad_producida }} kg</td>
+                    <td>{{ p.fecha|date:"d/m/Y H:i" }}</td>
+                    <td class="acciones">
+                        <a href="{% url 'produccion_detail' p.id %}" class="btn-edit">👁 Ver detalle</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="no-data">No hay producciones registradas</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}

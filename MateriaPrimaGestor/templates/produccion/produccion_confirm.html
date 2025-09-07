@@ -2,34 +2,53 @@
 {% block title %}Confirmar Producción{% endblock %}
 
 {% block content %}
-<h2>Confirmar Producción</h2>
+<div class="produccion-container">
+    <div class="produccion-header">
+        <h2>Confirmar Producción</h2>
+    </div>
 
-<p>Producto: <b>{{ producto.nombre }}</b></p>
-<p>Cantidad a producir: <b>{{ cantidad }}</b></p>
+    <div class="produccion-info">
+        <p><strong>Producto:</strong> {{ producto.nombre }}</p>
+        <p><strong>Cantidad a producir:</strong> {{ cantidad }} kg</p>
+    </div>
 
-<h3>Materias primas necesarias</h3>
-<table border="1">
-  <tr>
-    <th>Materia Prima</th>
-    <th>Disponible</th>
-    <th>Requerido</th>
-    <th>OK</th>
-  </tr>
-  {% for c in consumos %}
-  <tr>
-    <td>{{ c.materia.nombre }}</td>
-    <td>{{ c.disponible }}</td>
-    <td>{{ c.requerido }}</td>
-    <td>{% if c.suficiente %}✅{% else %}❌{% endif %}</td>
-  </tr>
-  {% endfor %}
-</table>
+    <h3>Materias primas necesarias</h3>
+    <div class="produccion-table-wrapper">
+        <table class="produccion-table">
+            <thead>
+                <tr>
+                    <th>Materia Prima</th>
+                    <th>Disponible</th>
+                    <th>Requerido</th>
+                    <th>OK</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in consumos %}
+                <tr>
+                    <td>{{ c.materia.nombre }}</td>
+                    <td>{{ c.disponible }}</td>
+                    <td>{{ c.requerido }}</td>
+                    <td class="text-center">
+                        {% if c.suficiente %}
+                            ✅
+                        {% else %}
+                            ❌
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-<form method="post" action="{% url 'produccion_confirm' %}">
-  {% csrf_token %}
-  <input type="hidden" name="codigo" value="{{ producto.codigo }}">
-  <input type="hidden" name="cantidad" value="{{ cantidad }}">
-  <button type="submit">✅ Confirmar Producción</button>
-  <a href="{% url 'producto_list' %}">❌ Cancelar</a>
-</form>
+    <form method="post" action="{% url 'produccion_confirm' %}" class="acciones">
+        {% csrf_token %}
+        <input type="hidden" name="codigo" value="{{ producto.codigo }}">
+        <input type="hidden" name="cantidad" value="{{ cantidad }}">
+        
+        <button type="submit" class="btn-confirm">Confirmar Producción</button>
+        <a href="{% url 'producto_list' %}" class="btn-cancel">❌ Cancelar</a>
+    </form>
+</div>
 {% endblock %}

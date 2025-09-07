@@ -1,32 +1,45 @@
 {% extends "base.html" %}
-{% block title %} Titulo {% endblock %}
+{% block title %}Detalle Producción{% endblock %}
 
 {% block content %}
-<h2>Detalle de Producción</h2>
-<p><strong>Producto:</strong> {{ produccion.producto.nombre }}</p>
-<p><strong>Cantidad producida:</strong> {{ produccion.cantidad_producida }} kg</p>
-<p><strong>Fecha:</strong> {{ produccion.fecha|date:"d/m/Y H:i" }}</p>
+<div class="produccion-container">
+    <div class="produccion-header">
+        <h2>Detalle de Producción</h2>
+    </div>
 
-<h3>Materias primas usadas</h3>
-<table border="1">
-    <tr>
-        <th>Materia Prima</th>
-        <th>Cantidad Usada</th>
-        <th>Unidad</th>
-    </tr>
-    {% for c in consumos %}
-    <tr>
-        <td>{{ c.materia_prima.nombre }}</td>
-        <td>{{ c.cantidad_usada }}</td>
-        <td>{{ c.materia_prima.unidad }}</td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="3">No se registraron consumos</td>
-    </tr>
-    {% endfor %}
-</table>
+    <div class="produccion-info">
+        <p><strong>Producto:</strong> {{ produccion.producto.nombre }}</p>
+        <p><strong>Cantidad producida:</strong> {{ produccion.cantidad_producida }} kg</p>
+        <p><strong>Fecha:</strong> {{ produccion.fecha|date:"d/m/Y H:i" }}</p>
+    </div>
 
-<a href="{% url 'produccion_list' %}">Volver al listado</a>
-
+    <h3>Materias primas usadas</h3>
+    <div class="produccion-table-wrapper">
+        <table class="produccion-table">
+            <thead>
+                <tr>
+                    <th>Materia Prima</th>
+                    <th>Cantidad Usada</th>
+                    <th>Unidad</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in consumos %}
+                <tr>
+                    <td>{{ c.materia_prima.nombre }}</td>
+                    <td>{{ c.cantidad_usada }}</td>
+                    <td>{{ c.materia_prima.unidad }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="no-data">No se registraron consumos</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="acciones">
+        <a href="{% url 'produccion_list' %}" class="btn-volver">← Volver al listado</a>
+    </div>
+</div>
 {% endblock %}

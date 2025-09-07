@@ -1,11 +1,18 @@
 {% extends "base.html" %}
-{% block title %} Titulo {% endblock %}
+{% block title %}Producción{% endblock %}
 
 {% block content %}
-<h2>Producir {{ producto.nombre }}</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Calcular consumo</button>
-</form>
+<div class="produccion-container">
+    <h2>{% if form.instance.pk %}Editar Producción{% else %}Nueva Producción{% endif %}</h2>
+
+    <form method="post" class="produccion-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <div class="produccion-actions">
+            <button type="submit" class="btn-confirm">Guardar</button>
+            <a href="{% url 'produccion_list' %}" class="btn-cancel">⬅ Volver</a>
+        </div>
+    </form>
+</div>
 {% endblock %}
