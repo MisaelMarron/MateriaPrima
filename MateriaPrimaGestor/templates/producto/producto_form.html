@@ -8,49 +8,626 @@
   <form method="post" class="producto-form">
     {% csrf_token %}
 
-    <fieldset>
+    <fieldset class="form-section">
       <legend>Datos del producto</legend>
-      {{ form.as_p }}
+      <div class="form-grid">
+        {% for field in form %}
+          <div class="form-field">
+            <label for="{{ field.id_for_label }}" class="field-label">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+              <div class="field-error">{{ field.errors }}</div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
     </fieldset>
 
-    <fieldset>
+    <fieldset class="form-section">
       <legend>Materias primas</legend>
       {{ formset.management_form }}
-      <table class="producto-table2">
-        <tr>
-          <th>Materia Prima</th>
-          <th>Cantidad</th>
-          <th>Eliminar</th>
-        </tr>
-        {% for f in formset %}
-        <tr>
-          <td>{{ f.codigoMateriaPrima }}</td>
-          <td>{{ f.cantidad }}</td>
-          <td>
-            {% if f.instance.pk %}
-              {{ f.DELETE }}
-            {% endif %}
-          </td>
-        </tr>
-        {% endfor %}
-      </table>
-      <button type="button" onclick="addForm()">➕ Añadir fila</button>
+      
+      <!-- Mostrar errores del formset -->
+      {% if formset.non_form_errors %}
+        <div class="formset-error">
+          {{ formset.non_form_errors }}
+        </div>
+      {% endif %}
+
+      <!-- Tabla dinámica -->
+      <div class="table-container">
+        <table class="materias-table">
+          <thead>
+            <tr>
+              <th>Materia Prima</th>
+              <th>Cantidad</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="formset-body">
+            {% for form in formset %}
+            <tr class="formset-row">
+              <td>
+                {{ form.codigoMateriaPrima }}
+                {% if form.codigoMateriaPrima.errors %}
+                  <div class="field-error">{{ form.codigoMateriaPrima.errors }}</div>
+                {% endif %}
+              </td>
+              <td>
+                {{ form.cantidad }}
+                {% if form.cantidad.errors %}
+                  <div class="field-error">{{ form.cantidad.errors }}</div>
+                {% endif %}
+              </td>
+              <td class="actions-cell">
+                {% if form.instance.pk %}
+                  {{ form.DELETE }}
+                  <label for="{{ form.DELETE.id_for_label }}" class="delete-label">Eliminar</label>
+                {% else %}
+                  <button type="button" class="btn-remove" onclick="removeRow(this)" title="Eliminar fila">
+                    🗑️
+                  </button>
+                {% endif %}
+                <!-- Campos ocultos del form -->
+                {% for hidden in form.hidden_fields %}
+                  {{ hidden }}
+                {% endfor %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        
+        <div class="table-actions">
+          <button type="button" class="btn-add" onclick="addNewRow()">
+            ➕ Agregar Materia Prima
+          </button>
+        </div>
+      </div>
     </fieldset>
 
-    <button type="submit" class="btn-save">Guardar</button>
+    <div class="form-actions">
+      <button type="submit" class="btn-save">💾 Guardar Producto</button>
+      <a href="{% url 'producto_list' %}" class="btn-back">← Volver</a>
+    </div>
   </form>
-
-  <a href="{% url 'producto_list' %}" class="btn-back">⬅ Volver</a>
 </div>
 
+<!-- Template para nueva fila -->
+<table id="row-template" style="display: none;">
+  <tbody>
+    <tr class="formset-row">
+      <td>
+        <select name="detalleproducto_set-__prefix__-codigoMateriaPrima" 
+                id="id_detalleproducto_set-__prefix__-codigoMateriaPrima" 
+                class="materia-select" required>
+          <option value="">--- Seleccionar Materia Prima ---</option>
+          {% for materia in materias_disponibles %}
+            <option value="{{ materia.codigo }}">{{ materia.codigo }} - {{ materia.nombre }} ({{ materia.unidad }})</option>
+          {% endfor %}
+        </select>
+      </td>
+      <td>
+        <input type="number" 
+               name="detalleproducto_set-__prefix__-cantidad" 
+               id="id_detalleproducto_set-__prefix__-cantidad"
+               class="cantidad-input"
+               step="0.00001" 
+               min="0.00001" 
+               required 
+               placeholder="0.00000">
+      </td>
+      <td class="actions-cell">
+        <button type="button" class="btn-remove" onclick="removeRow(this)" title="Eliminar fila">
+          🗑️
+        </button>
+        <input type="hidden" name="detalleproducto_set-__prefix__-id" id="id_detalleproducto_set-__prefix__-id">
+      </td>
+    </tr>
+  </tbody>
+</table>
+
 <script>
-  function addForm() {
+  let formIndex = "{{ formset.forms|length }}";
+
+  function addNewRow() {
     const totalForms = document.getElementById('id_detalleproducto_set-TOTAL_FORMS');
     const currentCount = parseInt(totalForms.value);
-    const newForm = document.querySelector('table tr:last-child').cloneNode(true);
-    newForm.innerHTML = newForm.innerHTML.replace(/-\d+-/g, `-${currentCount}-`);
-    document.querySelector('table').appendChild(newForm);
+    
+    // Obtener template
+    const template = document.getElementById('row-template');
+    const newRow = template.querySelector('tr').cloneNode(true);
+    
+    // Actualizar índices
+    updateRowIndices(newRow, currentCount);
+    
+    // Agregar event listener para validación de duplicados
+    const select = newRow.querySelector('.materia-select');
+    select.addEventListener('change', validateDuplicate);
+    
+    // Agregar la nueva fila
+    document.getElementById('formset-body').appendChild(newRow);
+    
+    // Incrementar contador
     totalForms.value = currentCount + 1;
+    
+    // Enfocar en el select
+    select.focus();
+    
+    // Animación de entrada
+    newRow.style.opacity = '0';
+    newRow.style.transform = 'translateY(-10px)';
+    setTimeout(() => {
+      newRow.style.transition = 'all 0.3s ease';
+      newRow.style.opacity = '1';
+      newRow.style.transform = 'translateY(0)';
+    }, 10);
   }
+
+  function removeRow(button) {
+    const row = button.closest('tr');
+    const deleteField = row.querySelector('input[name$="-DELETE"]');
+    
+    if (deleteField) {
+      // Para registros existentes, marcar como eliminado
+      deleteField.checked = true;
+      row.style.opacity = '0.5';
+      row.style.textDecoration = 'line-through';
+      button.textContent = '↻';
+      button.title = 'Restaurar';
+      button.onclick = function() { restoreRow(this); };
+    } else {
+      // Para nuevas filas, eliminar del DOM
+      row.style.transition = 'all 0.3s ease';
+      row.style.opacity = '0';
+      row.style.transform = 'translateX(-100%)';
+      setTimeout(() => {
+        row.remove();
+        updateFormIndices();
+      }, 300);
+    }
+  }
+
+  function restoreRow(button) {
+    const row = button.closest('tr');
+    const deleteField = row.querySelector('input[name$="-DELETE"]');
+    
+    deleteField.checked = false;
+    row.style.opacity = '1';
+    row.style.textDecoration = 'none';
+    button.textContent = '🗑️';
+    button.title = 'Eliminar fila';
+    button.onclick = function() { removeRow(this); };
+  }
+
+  function updateRowIndices(row, index) {
+    const inputs = row.querySelectorAll('input, select');
+    inputs.forEach(input => {
+      const name = input.getAttribute('name');
+      const id = input.getAttribute('id');
+      
+      if (name) {
+        input.setAttribute('name', name.replace('__prefix__', index));
+      }
+      if (id) {
+        input.setAttribute('id', id.replace('__prefix__', index));
+      }
+    });
+    
+    const labels = row.querySelectorAll('label');
+    labels.forEach(label => {
+      const forAttr = label.getAttribute('for');
+      if (forAttr) {
+        label.setAttribute('for', forAttr.replace('__prefix__', index));
+      }
+    });
+  }
+
+  function updateFormIndices() {
+    const rows = document.querySelectorAll('#formset-body .formset-row');
+    const totalForms = document.getElementById('id_detalleproducto_set-TOTAL_FORMS');
+    
+    let activeIndex = 0;
+    rows.forEach(row => {
+      // Solo reindexar filas visibles (no eliminadas)
+      const deleteField = row.querySelector('input[name$="-DELETE"]');
+      if (!deleteField || !deleteField.checked) {
+        updateRowIndices(row, activeIndex);
+        activeIndex++;
+      }
+    });
+    
+    totalForms.value = activeIndex;
+  }
+
+  function validateDuplicate(event) {
+    const currentSelect = event.target;
+    const currentValue = currentSelect.value;
+    const currentRow = currentSelect.closest('tr');
+    
+    if (!currentValue) return;
+    
+    // Verificar duplicados
+    const allSelects = document.querySelectorAll('.materia-select');
+    let duplicateFound = false;
+    
+    allSelects.forEach(select => {
+      if (select !== currentSelect && 
+          select.value === currentValue && 
+          !select.closest('tr').querySelector('input[name$="-DELETE"]:checked')) {
+        duplicateFound = true;
+      }
+    });
+    
+    if (duplicateFound) {
+      currentSelect.style.borderColor = '#dc3545';
+      currentSelect.style.backgroundColor = '#f8d7da';
+      
+      // Mostrar mensaje de error
+      let errorDiv = currentRow.querySelector('.duplicate-error');
+      if (!errorDiv) {
+        errorDiv = document.createElement('div');
+        errorDiv.className = 'field-error duplicate-error';
+        errorDiv.textContent = 'Esta materia prima ya está seleccionada';
+        currentSelect.parentNode.appendChild(errorDiv);
+      }
+      
+      currentSelect.value = '';
+    } else {
+      currentSelect.style.borderColor = '';
+      currentSelect.style.backgroundColor = '';
+      
+      // Remover mensaje de error
+      const errorDiv = currentRow.querySelector('.duplicate-error');
+      if (errorDiv) {
+        errorDiv.remove();
+      }
+    }
+  }
+
+  // Inicialización
+  document.addEventListener('DOMContentLoaded', function() {
+    // Agregar validación a selects existentes
+    const existingSelects = document.querySelectorAll('.materia-select');
+    existingSelects.forEach(select => {
+      select.addEventListener('change', validateDuplicate);
+    });
+
+    // Si no hay filas, agregar una automáticamente
+    const tbody = document.getElementById('formset-body');
+    if (tbody.children.length === 0) {
+      addNewRow();
+    }
+  });
+
+  // Validación antes del envío
+  document.querySelector('.producto-form').addEventListener('submit', function(event) {
+    const rows = document.querySelectorAll('#formset-body .formset-row');
+    let hasValidRows = false;
+    let hasErrors = false;
+    
+    rows.forEach(row => {
+      const deleteField = row.querySelector('input[name$="-DELETE"]');
+      const select = row.querySelector('.materia-select');
+      const cantidadInput = row.querySelector('.cantidad-input');
+      
+      // Solo validar filas no eliminadas
+      if (!deleteField || !deleteField.checked) {
+        if (select.value && cantidadInput.value && parseFloat(cantidadInput.value) > 0) {
+          hasValidRows = true;
+        } else if (select.value || cantidadInput.value) {
+          hasErrors = true;
+        }
+      }
+    });
+    
+    if (!hasValidRows) {
+      event.preventDefault();
+      alert('Debe agregar al menos una materia prima con cantidad válida.');
+      return false;
+    }
+    
+    if (hasErrors) {
+      event.preventDefault();
+      alert('Complete todos los campos requeridos en las materias primas.');
+      return false;
+    }
+  });
 </script>
+
+<style>
+.producto-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.form-section {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+}
+
+.form-section legend {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.field-label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.form-field input, .form-field select {
+  padding: 12px 16px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.form-field input:focus, .form-field select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+  transform: translateY(-1px);
+}
+
+.field-error {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+.table-container {
+  margin-top: 20px;
+}
+
+.materias-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.materias-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.materias-table th {
+  padding: 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+}
+
+.materias-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f8f9fa;
+  vertical-align: top;
+}
+
+.materias-table tr:hover {
+  background-color: #f8f9fa;
+}
+
+.materia-select, .cantidad-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.materia-select:focus, .cantidad-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102,126,234,0.2);
+}
+
+.actions-cell {
+  width: 80px;
+  text-align: center;
+}
+
+.btn-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.btn-remove:hover {
+  background-color: #f8d7da;
+  transform: scale(1.1);
+}
+
+.delete-label {
+  font-size: 12px;
+  color: #6c757d;
+  margin-left: 8px;
+}
+
+.table-actions {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.btn-add {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(40,167,69,0.3);
+}
+
+.btn-add:hover {
+  background: linear-gradient(135deg, #218838, #1aa179);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(40,167,69,0.4);
+}
+
+.formset-error {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 12px 16px;
+  border-radius: 6px;
+  border: 1px solid #f5c6cb;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.form-actions {
+  text-align: center;
+  padding-top: 32px;
+  border-top: 2px solid #f8f9fa;
+  margin-top: 32px;
+}
+
+.btn-save {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  padding: 14px 28px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-right: 16px;
+  box-shadow: 0 4px 8px rgba(0,123,255,0.3);
+}
+
+.btn-save:hover {
+  background: linear-gradient(135deg, #0056b3, #004085);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,123,255,0.4);
+}
+
+.btn-back {
+  background: linear-gradient(135deg, #6c757d, #5a6268);
+  color: white;
+  padding: 14px 28px;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(108,117,125,0.3);
+}
+
+.btn-back:hover {
+  background: linear-gradient(135deg, #5a6268, #495057);
+  color: white;
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(108,117,125,0.4);
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.formset-row {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .materias-table {
+    font-size: 12px;
+  }
+  
+  .materias-table th,
+  .materias-table td {
+    padding: 8px;
+  }
+  
+  .btn-save, .btn-back {
+    display: block;
+    margin: 8px auto;
+    width: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .materias-table thead {
+    display: none;
+  }
+  
+  .materias-table tr {
+    display: block;
+    margin-bottom: 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+  }
+  
+  .materias-table td {
+    display: block;
+    padding: 8px 0;
+    border: none;
+  }
+  
+  .materias-table td:before {
+    content: attr(data-label) ": ";
+    font-weight: bold;
+    display: inline-block;
+    width: 120px;
+  }
+}
+</style>
 {% endblock %}

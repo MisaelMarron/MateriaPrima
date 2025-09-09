@@ -47,14 +47,7 @@ class Produccion(models.Model):
     def __str__(self):
         return f"Producción de {self.cantidad_producida} kg de {self.producto.nombre} el {self.fecha}"
     
-class Produccion(models.Model):
-    producto = models.ForeignKey(ProductoTerminado, on_delete=models.CASCADE)
-    cantidad_producida = models.DecimalField(max_digits=20, decimal_places=5)
-    fecha = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Producción de {self.cantidad_producida} kg de {self.producto.nombre} el {self.fecha}"
-    
+   
 class ConsumoMateriaPrima(models.Model):
     produccion = models.ForeignKey("Produccion", on_delete=models.CASCADE, related_name="consumos")
     materia_prima = models.ForeignKey(MateriaPrima, on_delete=models.CASCADE)

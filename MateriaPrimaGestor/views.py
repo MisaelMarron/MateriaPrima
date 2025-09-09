@@ -115,38 +115,84 @@ def producto_list(request):
 def producto_create(request):
     if request.method == "POST":
         form = ProductoTerminadoForm(request.POST)
-        formset = DetalleProductoFormSet(request.POST, instance=ProductoTerminado())
-        if form.is_valid() and formset.is_valid():
-            producto = form.save()
-            formset.instance = producto
-            formset.save()
-            return redirect("producto_list")
+        if form.is_valid():
+            try:
+                producto = form.save()
+                formset = DetalleProductoFormSet(request.POST, instance=producto)
+                if formset.is_valid():
+                    formset.save()
+                    messages.success(request, f'Producto "{producto.nombre}" creado exitosamente.')
+                    return redirect("producto_list")
+                else:
+                    # Si el formset no es válido, eliminar el producto creado para evitar inconsistencias
+                    producto.delete()
+                    messages.error(request, 'Error en los datos de materias primas. Por favor, revise los campos marcados.')
+            except Exception as e:
+                messages.error(request, f'Error al crear el producto: {str(e)}')
+        else:
+            formset = DetalleProductoFormSet(request.POST)
+            messages.error(request, 'Error en los datos del producto. Por favor, revise los campos marcados.')
     else:
         form = ProductoTerminadoForm()
-        formset = DetalleProductoFormSet(instance=ProductoTerminado())
-    return render(request, "producto/producto_form.html", {"form": form, "formset": formset})
+        formset = DetalleProductoFormSet()
+    
+    # Obtener todas las materias primas disponibles para el checklist
+    materias_disponibles = MateriaPrima.objects.all().order_by('codigo')
+    
+    return render(request, "producto/producto_form.html", {
+        "form": form, 
+        "formset": formset,
+        "materias_disponibles": materias_disponibles
+    })
 
 # EDITAR
 def producto_update(request, codigo):
     producto = get_object_or_404(ProductoTerminado, pk=codigo)
+    
     if request.method == "POST":
         form = ProductoTerminadoForm(request.POST, instance=producto)
         formset = DetalleProductoFormSet(request.POST, instance=producto)
+        
         if form.is_valid() and formset.is_valid():
-            form.save()
-            formset.save()
-            return redirect("producto_list")
+            try:
+                form.save()
+                formset.save()
+                messages.success(request, f'Producto "{producto.nombre}" actualizado exitosamente.')
+                return redirect("producto_list")
+            except Exception as e:
+                messages.error(request, f'Error al actualizar el producto: {str(e)}')
+        else:
+            if not form.is_valid():
+                messages.error(request, 'Error en los datos del producto. Por favor, revise los campos marcados.')
+            if not formset.is_valid():
+                messages.error(request, 'Error en los datos de materias primas. Por favor, revise los campos marcados.')
     else:
         form = ProductoTerminadoForm(instance=producto)
         formset = DetalleProductoFormSet(instance=producto)
-    return render(request, "producto/producto_form.html", {"form": form, "formset": formset})
+    
+    # Obtener todas las materias primas disponibles para el checklist
+    materias_disponibles = MateriaPrima.objects.all().order_by('codigo')
+    
+    return render(request, "producto/producto_form.html", {
+        "form": form, 
+        "formset": formset,
+        "materias_disponibles": materias_disponibles
+    })
 
 # ELIMINAR
 def producto_delete(request, codigo):
     producto = get_object_or_404(ProductoTerminado, pk=codigo)
+    
     if request.method == "POST":
-        producto.delete()
-        return redirect("producto_list")
+        try:
+            nombre_producto = producto.nombre  # Guardar el nombre antes de eliminar
+            producto.delete()
+            messages.success(request, f'Producto "{nombre_producto}" eliminado exitosamente.')
+            return redirect("producto_list")
+        except Exception as e:
+            messages.error(request, f'Error al eliminar el producto: {str(e)}')
+            return redirect("producto_list")
+    
     return render(request, "producto/producto_confirm_delete.html", {"producto": producto})
 
 
