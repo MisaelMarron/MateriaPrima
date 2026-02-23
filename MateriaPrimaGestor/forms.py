@@ -1,6 +1,20 @@
 from django import forms
 from django.forms import inlineformset_factory
 from django.forms.models import BaseInlineFormSet
+from .models import Proveedor
+
+class ProveedorForm(forms.ModelForm):
+    class Meta:
+        model = Proveedor
+        fields = ["nombre"]
+        labels = {"nombre": "Nombre del proveedor"}
+        widgets = {"nombre": forms.TextInput(attrs={"class": "form-control", "placeholder": "Ingrese nombre"})}
+
+    def clean_nombre(self):
+        nombre = self.cleaned_data["nombre"].strip()
+        if not nombre:
+            raise forms.ValidationError("El nombre no puede estar vacío.")
+        return nombre
 
 """# formulario para Materia Prima
 class MateriaPrimaForm(forms.ModelForm):

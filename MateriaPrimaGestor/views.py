@@ -3,8 +3,8 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout
 from django.contrib import messages
-from decimal import Decimal
-from django.core.exceptions import ValidationError
+from .forms import ProveedorForm
+from .models import Proveedor
 
 def inicio(request):
     return render(request, "inicio.html")
@@ -47,4 +47,42 @@ def logout_view(request):
     messages.info(request, "Sesión cerrada correctamente")
     return redirect("inicio")
 
-############## CRUD de MateriaPrima
+############## CRUD de proveedor
+@login_required
+def listar_proveedores(request):
+    proveedores = Proveedor.objects.all().order_by("codigo")
+    return render(request, "proveedor/listar.html", {"proveedores": proveedores})
+
+@login_required
+def crear_proveedor(request):
+    form = ProveedorForm(request.POST or None)
+    if form.is_valid():
+        form.save()
+        messages.success(request, "Proveedor creado correctamente.")
+        return redirect("listar_proveedores")
+    return render(request, "proveedor/form.html", {"form": form, "titulo": "Crear Proveedor"})
+
+@login_required
+def editar_proveedor(request, pk):
+    proveedor = get_object_or_404(Proveedor, pk=pk)
+    form = ProveedorForm(request.POST or None, instance=proveedor)
+    if form.is_valid():
+        form.save()
+        messages.success(request, "Proveedor actualizado correctamente.")
+        return redirect("listar_proveedores")
+    return render(request, "proveedor/form.html", {"form": form, "titulo": "Editar Proveedor"})
+
+@login_required
+def eliminar_proveedor(request, pk):
+    proveedor = get_object_or_404(Proveedor, pk=pk)
+    if request.method == "POST":
+        proveedor.delete()
+        messages.success(request, "Proveedor eliminado correctamente.")
+        return redirect("listar_proveedores")
+    return render(request, "proveedor/eliminar.html", {"proveedor": proveedor})
+
+############## CRUD de 
+
+############## CRUD de 
+
+############## CRUD de 

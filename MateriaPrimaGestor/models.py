@@ -1,60 +1,59 @@
 from django.db import models
+from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
 
-
-"""class MateriaPrima(models.Model):
-    UNIDADES = [
-        ("kg", "Kilogramo"),
-        ("L", "Litro"),
-        ("UNIDAD", "Unidad"),
-    ]
-
-    codigo = models.CharField(max_length=20, unique=True, primary_key=True)
-    nombre = models.CharField(max_length=100)
-    cantidad = models.DecimalField(max_digits=20, decimal_places=5, default=0)
-    unidad = models.CharField(max_length=10, choices=UNIDADES, default="kg")
-    ultima_vez_actualizado = models.DateTimeField(auto_now=True)
-
+class Proveedor(models.Model):
+    codigo = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=150, unique=True)
     def __str__(self):
         return f"{self.codigo} - {self.nombre}"
-    
-    def clean(self):
-        if self.cantidad < 0:
-            raise ValidationError("La cantidad debe ser positiva")
-    
+
+class MateriaPrima(models.Model):
+    codigo = models.AutoField(primary_key=True)
+    UNIDADES = [("KG", "Kilogramos"), ("L", "Litros"), ("G", "Gramos"), ("ML", "Mililitros"), ("U", "Unidad")]
+    nombre = models.CharField(max_length=150, unique=True)
+    unidad = models.CharField(max_length=5, choices=UNIDADES)
+    cantidad = models.DecimalField(max_digits=12, decimal_places=3, validators=[MinValueValidator(0)])
+    costo = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0)])
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    def __str__(self):
+        return self.nombre
+
+class Compra(models.Model):
+    codigo = models.AutoField(primary_key=True)
+    proveedor = models.ForeignKey(Proveedor, on_delete=models.PROTECT)
+    materia_prima = models.ForeignKey(MateriaPrima, on_delete=models.PROTECT)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+
 class ProductoTerminado(models.Model):
-    codigo = models.CharField(max_length=20, unique=True, primary_key=True)
-    nombre = models.CharField(max_length=100)
-
+    codigo = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=150, unique=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
     def __str__(self):
-        return f"{self.codigo} - {self.nombre}"
-    
+        return self.nombre
+
 class DetalleProducto(models.Model):
-    codigoMateriaPrima = models.ForeignKey(MateriaPrima, on_delete=models.CASCADE)
-    codigoProductoTerminado = models.ForeignKey(ProductoTerminado, on_delete=models.CASCADE)
-    cantidad = models.DecimalField(max_digits=20, decimal_places=5)
-
-    class Meta:
-        unique_together = ("codigoMateriaPrima", "codigoProductoTerminado")
-
-    def __str__(self):
-        return f"{self.codigoProductoTerminado.nombre} usa {self.cantidad} de {self.codigoMateriaPrima.nombre}"
-    
-class Produccion(models.Model):
+    codigo = models.AutoField(primary_key=True)
     producto = models.ForeignKey(ProductoTerminado, on_delete=models.CASCADE)
-    cantidad_producida = models.DecimalField(max_digits=20, decimal_places=5)
-    fecha = models.DateTimeField(auto_now_add=True)
+    materia_prima = models.ForeignKey(MateriaPrima, on_delete=models.PROTECT)
+    cantidad = models.DecimalField(max_digits=12, decimal_places=3, validators=[MinValueValidator(0)])
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["producto", "materia_prima"], name="unique_materia_por_producto")]
 
-    def __str__(self):
-        return f"Producción de {self.cantidad_producida} kg de {self.producto.nombre} el {self.fecha}"
-    
-   
-class ConsumoMateriaPrima(models.Model):
-    produccion = models.ForeignKey("Produccion", on_delete=models.CASCADE, related_name="consumos")
-    materia_prima = models.ForeignKey(MateriaPrima, on_delete=models.CASCADE)
-    cantidad_usada = models.DecimalField(max_digits=20, decimal_places=5)
+class ProduccionProducto(models.Model):
+    codigo = models.AutoField(primary_key=True)
+    producto = models.ForeignKey(ProductoTerminado, on_delete=models.PROTECT)
+    cantidad = models.DecimalField(max_digits=12, decimal_places=3, validators=[MinValueValidator(0)])
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"{self.cantidad_usada} {self.materia_prima.unidad} de {self.materia_prima.nombre} en {self.produccion}"
-
-"""
+class ProduccionDetalle(models.Model):
+    codigo = models.AutoField(primary_key=True)
+    produccion = models.ForeignKey(ProduccionProducto, on_delete=models.CASCADE)
+    materia_prima = models.ForeignKey(MateriaPrima, on_delete=models.PROTECT)
+    costo = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0)])
+    cantidad = models.DecimalField(max_digits=12, decimal_places=3, validators=[MinValueValidator(0)])
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["produccion", "materia_prima"], name="unique_materia_por_produccion")]
