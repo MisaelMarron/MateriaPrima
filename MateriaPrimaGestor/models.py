@@ -1,12 +1,11 @@
 from django.db import models
 from django.core.validators import MinValueValidator
-from django.core.exceptions import ValidationError
 
 class Proveedor(models.Model):
     codigo = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=150, unique=True)
     def __str__(self):
-        return f"{self.codigo} - {self.nombre}"
+        return f"{self.nombre}"
 
 class MateriaPrima(models.Model):
     codigo = models.AutoField(primary_key=True)
@@ -24,6 +23,8 @@ class Compra(models.Model):
     codigo = models.AutoField(primary_key=True)
     proveedor = models.ForeignKey(Proveedor, on_delete=models.PROTECT)
     materia_prima = models.ForeignKey(MateriaPrima, on_delete=models.PROTECT)
+    cantidad = models.DecimalField(max_digits=12, decimal_places=5, validators=[MinValueValidator(0)])
+    costo = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0)])
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
 

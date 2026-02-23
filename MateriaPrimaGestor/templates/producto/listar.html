@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Productos{% endblock %}
+
+{% block content %}
+<h1>Productos Terminados</h1>
+
+<a href="{% url 'crear_producto' %}">➕ Nuevo Producto</a>
+
+<table>
+<tr>
+<th>ID</th><th>Nombre</th><th>Acciones</th>
+</tr>
+
+{% for p in productos %}
+<tr>
+<td>{{ p.codigo }}</td>
+<td>{{ p.nombre }}</td>
+<td>
+<a href="{% url 'editar_producto' p.codigo %}">Editar</a>
+<a href="{% url 'eliminar_producto' p.codigo %}">Eliminar</a>
+</td>
+</tr>
+{% endfor %}
+</table>
+{% endblock %}

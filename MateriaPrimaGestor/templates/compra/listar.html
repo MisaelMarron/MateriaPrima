@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Compras{% endblock %}
+
+{% block content %}
+<h1>Compras</h1>
+
+<a href="{% url 'crear_compra' %}">➕ Nueva Compra</a>
+
+<table>
+<tr>
+<th>ID</th><th>Proveedor</th><th>Materia</th><th>Cantidad</th><th>Costo</th><th>Acciones</th>
+</tr>
+
+{% for c in compras %}
+<tr>
+<td>{{ c.codigo }}</td>
+<td>{{ c.proveedor.nombre }}</td>
+<td>{{ c.materia_prima.nombre }}</td>
+<td>{{ c.cantidad }}</td>
+<td>{{ c.costo }}</td>
+<td>
+<a href="{% url 'editar_compra' c.codigo %}">Editar</a>
+<a href="{% url 'eliminar_compra' c.codigo %}">Eliminar</a>
+</td>
+</tr>
+{% endfor %}
+</table>
+{% endblock %}

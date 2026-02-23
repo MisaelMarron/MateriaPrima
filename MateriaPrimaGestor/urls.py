@@ -18,4 +18,14 @@ urlpatterns = [
     path("materias/<int:pk>/editar/", views.editar_materia, name="editar_materia"),
     path("materias/<int:pk>/ajustar/", views.ajustar_materia, name="ajustar_materia"),
     path("materias/<int:pk>/eliminar/", views.eliminar_materia, name="eliminar_materia"),
+    # CRUD de compras
+    path("compras/", views.listar_compras, name="listar_compras"),
+    path("compras/crear/", views.crear_compra, name="crear_compra"),
+    path("compras/<int:pk>/editar/", views.editar_compra, name="editar_compra"),
+    path("compras/<int:pk>/eliminar/", views.eliminar_compra, name="eliminar_compra"),
+    # CRUD de productos terminados
+    path("productos/", views.listar_productos, name="listar_productos"),
+    path("productos/crear/", views.crear_producto, name="crear_producto"),
+    path("productos/<int:pk>/editar/", views.editar_producto, name="editar_producto"),
+    path("productos/<int:pk>/eliminar/", views.eliminar_producto, name="eliminar_producto"),
 ]
