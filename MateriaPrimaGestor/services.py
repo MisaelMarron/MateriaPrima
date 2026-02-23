@@ -1,6 +1,7 @@
 from decimal import Decimal
 from django.core.exceptions import ValidationError
-from .models import DetalleProducto, Produccion, ConsumoMateriaPrima
+
+"""
 
 def producir_producto(producto, cantidad: Decimal):
     detalles = DetalleProducto.objects.filter(codigoProductoTerminado=producto)
@@ -37,3 +38,4 @@ def producir_producto(producto, cantidad: Decimal):
         )
 
     return produccion
+"""

@@ -1,9 +1,8 @@
 from django import forms
 from django.forms import inlineformset_factory
-from .models import MateriaPrima, ProductoTerminado, DetalleProducto
 from django.forms.models import BaseInlineFormSet
 
-# formulario para Materia Prima
+"""# formulario para Materia Prima
 class MateriaPrimaForm(forms.ModelForm):
     class Meta:
         model = MateriaPrima
@@ -63,3 +62,4 @@ class ProduccionForm(forms.Form):
         max_digits=20, decimal_places=5, min_value=0.00001,
         label="Cantidad a producir (kg)"
     )
+"""

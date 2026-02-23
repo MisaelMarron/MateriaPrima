@@ -1,7 +1,8 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 
-class MateriaPrima(models.Model):
+
+"""class MateriaPrima(models.Model):
     UNIDADES = [
         ("kg", "Kilogramo"),
         ("L", "Litro"),
@@ -56,3 +57,4 @@ class ConsumoMateriaPrima(models.Model):
     def __str__(self):
         return f"{self.cantidad_usada} {self.materia_prima.unidad} de {self.materia_prima.nombre} en {self.produccion}"
 
+"""
