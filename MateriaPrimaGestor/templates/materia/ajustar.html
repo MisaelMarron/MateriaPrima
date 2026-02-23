@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Ajustar Stock{% endblock %}
+
+{% block content %}
+<h2>Ajustar Stock: {{ materia.nombre }}</h2>
+<p>Stock actual: <strong>{{ materia.cantidad }}</strong></p>
+
+<form method="post">
+{% csrf_token %}
+{{ form.as_p }}
+
+<button type="submit">Aplicar</button>
+<a href="{% url 'listar_materias' %}">Cancelar</a>
+</form>
+{% endblock %}

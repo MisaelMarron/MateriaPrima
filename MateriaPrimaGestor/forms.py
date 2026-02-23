@@ -1,8 +1,7 @@
 from django import forms
-from django.forms import inlineformset_factory
-from django.forms.models import BaseInlineFormSet
-from .models import Proveedor
+from .models import Proveedor, MateriaPrima
 
+# Proveedor 
 class ProveedorForm(forms.ModelForm):
     class Meta:
         model = Proveedor
@@ -15,6 +14,27 @@ class ProveedorForm(forms.ModelForm):
         if not nombre:
             raise forms.ValidationError("El nombre no puede estar vacío.")
         return nombre
+
+# materia prima
+class MateriaPrimaCreateForm(forms.ModelForm):
+    class Meta:
+        model = MateriaPrima
+        fields = ["nombre", "unidad", "cantidad", "costo"]
+
+class MateriaPrimaUpdateForm(forms.ModelForm):
+    class Meta:
+        model = MateriaPrima
+        fields = ["nombre", "unidad", "costo"]
+
+class MateriaPrimaAjusteForm(forms.Form):
+    TIPO = (
+        ("SUMAR", "Agregar"),
+        ("RESTAR", "Quitar"),
+    )
+    tipo = forms.ChoiceField(choices=TIPO)
+    cantidad = forms.DecimalField(min_value=0.00001, max_digits=12, decimal_places=5)
+
+
 
 """# formulario para Materia Prima
 class MateriaPrimaForm(forms.ModelForm):

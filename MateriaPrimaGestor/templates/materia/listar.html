@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Materias Primas{% endblock %}
+
+{% block content %}
+<h1>Materias Primas</h1>
+
+<a href="{% url 'crear_materia' %}">➕ Nueva</a>
+
+<table>
+<tr>
+<th>Código</th><th>Nombre</th><th>Unidad</th><th>Stock</th><th>Costo</th><th>Acciones</th>
+</tr>
+
+{% for m in materias %}
+<tr>
+<td>{{ m.codigo }}</td>
+<td>{{ m.nombre }}</td>
+<td>{{ m.unidad }}</td>
+<td>{{ m.cantidad }}</td>
+<td>{{ m.costo }}</td>
+<td>
+<a href="{% url 'editar_materia' m.codigo %}">Editar</a>
+<a href="{% url 'ajustar_materia' m.codigo %}">Ajustar</a>
+<a href="{% url 'eliminar_materia' m.codigo %}">Eliminar</a>
+</td>
+</tr>
+{% endfor %}
+</table>
+{% endblock %}
