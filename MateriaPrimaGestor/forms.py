@@ -59,3 +59,9 @@ DetalleProductoFormSet = inlineformset_factory(
     extra=1,
     can_delete=True
 )
+
+# produccion 
+class ProduccionForm(forms.ModelForm):
+    class Meta:
+        model = ProduccionProducto
+        fields = ["producto", "cantidad"]

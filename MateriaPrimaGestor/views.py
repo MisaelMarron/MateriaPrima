@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout
 from django.contrib import messages
 from django.db import transaction
+from decimal import Decimal
 from .forms import *
 from .models import *
 
@@ -237,5 +238,94 @@ def eliminar_producto(request, pk):
         return redirect("listar_productos")
 
     return render(request, "producto/eliminar.html", {"producto": producto})
-############## CRUD de 
+############## CRUD de produccion
+@login_required
+def listar_producciones(request):
+    producciones = ProduccionProducto.objects.select_related("producto").all().order_by("-codigo")
+    return render(request, "produccion/listar.html", {"producciones": producciones})
 
+@login_required
+@transaction.atomic
+def crear_produccion(request):
+    form = ProduccionForm(request.POST or None)
+    if form.is_valid():
+        producto = form.cleaned_data["producto"]
+        cantidad_producir = form.cleaned_data["cantidad"]
+        receta = DetalleProducto.objects.filter(producto=producto)
+        if not receta.exists():
+            messages.error(request, "El producto no tiene receta.")
+            return redirect("crear_produccion")
+        costo_total = Decimal("0")
+        # VALIDAR STOCK
+        for item in receta:
+            requerido = item.cantidad * cantidad_producir
+            if item.materia_prima.cantidad < requerido:
+                messages.error(request, f"Stock insuficiente de {item.materia_prima.nombre}")
+                return redirect("crear_produccion")
+        # CREAR PRODUCCIÓN
+        produccion = form.save()
+        # DESCONTAR + CREAR DETALLE HISTÓRICO
+        for item in receta:
+            materia = item.materia_prima
+            requerido = item.cantidad * cantidad_producir
+            materia.cantidad -= requerido
+            materia.save()
+            costo = materia.costo
+            costo_total += requerido * costo
+            ProduccionDetalle.objects.create(
+                produccion=produccion,
+                materia_prima=materia,
+                cantidad=requerido,
+                costo=costo
+            )
+        messages.success(request, f"Producción registrada. Costo total: {round(costo_total,2)}")
+        return redirect("listar_producciones")
+    return render(request, "produccion/form.html", {"form": form, "titulo": "Nueva Producción"})
+
+@login_required
+@transaction.atomic
+def editar_produccion(request, pk):
+    produccion = get_object_or_404(ProduccionProducto, pk=pk)
+    form = ProduccionForm(request.POST or None, instance=produccion)
+    if form.is_valid():
+        # DEVOLVER STOCK ANTERIOR
+        detalles_anteriores = ProduccionDetalle.objects.filter(produccion=produccion)
+        for det in detalles_anteriores:
+            materia = det.materia_prima
+            materia.cantidad += det.cantidad
+            materia.save()
+        detalles_anteriores.delete()
+        # VOLVER A PRODUCIR CON NUEVA CANTIDAD
+        producto = form.cleaned_data["producto"]
+        nueva_cantidad = form.cleaned_data["cantidad"]
+        receta = DetalleProducto.objects.filter(producto=producto)
+        for item in receta:
+            requerido = item.cantidad * nueva_cantidad
+            materia = item.materia_prima
+            if materia.cantidad < requerido:
+                messages.error(request, f"Stock insuficiente de {materia.nombre}")
+                return redirect("editar_produccion", pk=pk)
+        produccion = form.save()
+        for item in receta:
+            materia = item.materia_prima
+            requerido = item.cantidad * nueva_cantidad
+            materia.cantidad -= requerido
+            materia.save()
+            ProduccionDetalle.objects.create(
+                produccion=produccion,
+                materia_prima=materia,
+                cantidad=requerido,
+                costo=materia.costo  # costo histórico nuevo
+            )
+        messages.success(request, "Producción recalculada correctamente.")
+        return redirect("listar_producciones")
+    return render(request, "produccion/form.html", {"form": form, "titulo": "Editar Producción"})
+
+@login_required
+def eliminar_produccion(request, pk):
+    produccion = get_object_or_404(ProduccionProducto, pk=pk)
+    if request.method == "POST":
+        produccion.delete()
+        messages.success(request, "Producción eliminada (histórico solamente).")
+        return redirect("listar_producciones")
+    return render(request, "produccion/eliminar.html", {"produccion": produccion})

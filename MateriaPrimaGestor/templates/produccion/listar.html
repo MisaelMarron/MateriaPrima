@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Producción{% endblock %}
+{% block content %}
+
+<h1>Producción</h1>
+<a href="{% url 'crear_produccion' %}">➕ Nueva</a>
+
+<table>
+<tr><th>ID</th><th>Producto</th><th>Cantidad</th><th>Fecha</th><th>Acciones</th></tr>
+{% for p in producciones %}
+<tr>
+<td>{{ p.codigo }}</td>
+<td>{{ p.producto.nombre }}</td>
+<td>{{ p.cantidad }}</td>
+<td>{{ p.fecha_creacion }}</td>
+<td>
+<a href="{% url 'editar_produccion' p.codigo %}">Editar</a>
+<a href="{% url 'eliminar_produccion' p.codigo %}">Eliminar</a>
+</td>
+</tr>
+{% endfor %}
+</table>
+
+{% endblock %}
