@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout
 from django.contrib import messages
+from django.http import JsonResponse
 from django.db import transaction
 from decimal import Decimal, ROUND_HALF_UP
 from .forms import *
@@ -245,42 +246,87 @@ def listar_producciones(request):
     return render(request, "produccion/listar.html", {"producciones": producciones})
 
 @login_required
+def listar_producciones(request):
+    producciones = ProduccionProducto.objects.select_related("producto").all().order_by("-codigo")
+    return render(request, "produccion/listar.html", {"producciones": producciones})
+
+@login_required
 @transaction.atomic
 def crear_produccion(request):
     form = ProduccionForm(request.POST or None)
-    if form.is_valid():
-        producto = form.cleaned_data["producto"]
-        cantidad_producir = form.cleaned_data["cantidad"]
-        receta = DetalleProducto.objects.filter(producto=producto)
-        if not receta.exists():
-            messages.error(request, "El producto no tiene receta.")
-            return redirect("crear_produccion")
-        costo_total = Decimal("0")
-        # VALIDAR STOCK
-        for item in receta:
-            requerido = item.cantidad * cantidad_producir
-            if item.materia_prima.cantidad < requerido:
-                messages.error(request, f"Stock insuficiente de {item.materia_prima.nombre}")
+    if request.method == "POST":
+        if form.is_valid():
+            producto = form.cleaned_data["producto"]
+            cantidad_producir = form.cleaned_data["cantidad"]
+            receta = DetalleProducto.objects.filter(producto=producto)
+            if not receta.exists():
+                messages.error(request, "El producto no tiene receta.")
                 return redirect("crear_produccion")
-        # CREAR PRODUCCIÓN
-        produccion = form.save()
-        # DESCONTAR + CREAR DETALLE HISTÓRICO
-        for item in receta:
-            materia = item.materia_prima
-            requerido = item.cantidad * cantidad_producir
-            materia.cantidad -= requerido
-            materia.save()
-            costo = materia.costo
-            costo_total += requerido * costo
-            ProduccionDetalle.objects.create(
-                produccion=produccion,
-                materia_prima=materia,
-                cantidad=requerido,
-                costo=costo
-            )
-        messages.success(request, f"Producción registrada. Costo total: {round(costo_total,2)}")
-        return redirect("listar_producciones")
-    return render(request, "produccion/form.html", {"form": form, "titulo": "Nueva Producción"})
+            
+            if 'confirm' in request.POST:
+                # VALIDAR STOCK (revalidar por si cambió)
+                for item in receta:
+                    requerido = item.cantidad * cantidad_producir
+                    if item.materia_prima.cantidad < requerido:
+                        messages.error(request, f"Stock insuficiente de {item.materia_prima.nombre}")
+                        return redirect("crear_produccion")
+                
+                # CREAR PRODUCCIÓN
+                produccion = form.save()
+                costo_total = Decimal("0")
+                # DESCONTAR + CREAR DETALLE HISTÓRICO
+                for item in receta:
+                    materia = item.materia_prima
+                    requerido = item.cantidad * cantidad_producir
+                    materia.cantidad -= requerido
+                    materia.save()
+                    costo = materia.costo
+                    costo_total += requerido * costo
+                    ProduccionDetalle.objects.create(
+                        produccion=produccion,
+                        materia_prima=materia,
+                        cantidad=requerido,
+                        costo=costo
+                    )
+                messages.success(request, f"Producción registrada. Costo total: {round(costo_total,2)}")
+                return redirect("listar_producciones")
+            else:
+                # Modo calculadora: calcular consumo sin guardar
+                consumos = []
+                costo_total = Decimal("0")
+                stock_suficiente = True
+                for item in receta:
+                    requerido = item.cantidad * cantidad_producir
+                    materia = item.materia_prima
+                    suficiente = materia.cantidad >= requerido
+                    if not suficiente:
+                        stock_suficiente = False
+                    costo_unitario = materia.costo
+                    costo_item = requerido * costo_unitario
+                    costo_total += costo_item
+                    consumos.append({
+                        'materia': materia.nombre,
+                        'unidad': materia.unidad,
+                        'requerido': requerido,
+                        'stock_actual': materia.cantidad,
+                        'suficiente': suficiente,
+                        'costo_unitario': costo_unitario,
+                        'costo_item': costo_item
+                    })
+                if not stock_suficiente:
+                    messages.warning(request, "Algunos materiales no tienen stock suficiente.")
+                context = {
+                    "form": form,
+                    "titulo": "Nueva Producción",
+                    "consumos": consumos,
+                    "costo_total": round(costo_total, 2),
+                    "preview": True  # Para condicionar en la plantilla
+                }
+                return render(request, "produccion/form.html", context)
+    else:
+        # GET: mostrar formulario vacío
+        context = {"form": form, "titulo": "Nueva Producción"}
+        return render(request, "produccion/form.html", context)
 
 @login_required
 @transaction.atomic
@@ -326,6 +372,16 @@ def eliminar_produccion(request, pk):
     produccion = get_object_or_404(ProduccionProducto, pk=pk)
     if request.method == "POST":
         produccion.delete()
-        messages.success(request, "Producción eliminada (histórico solamente).")
+        messages.success(request, "Producción eliminada.")
         return redirect("listar_producciones")
     return render(request, "produccion/eliminar.html", {"produccion": produccion})
+
+def get_receta(request, producto_id):
+    receta = DetalleProducto.objects.filter(producto_id=producto_id).values(
+        'materia_prima__nombre',
+        'materia_prima__unidad',
+        'materia_prima__cantidad',  # stock actual
+        'materia_prima__costo',
+        'cantidad'  # cantidad por unidad de producto
+    )
+    return JsonResponse(list(receta), safe=False)

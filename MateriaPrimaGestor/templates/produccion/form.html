@@ -7,12 +7,12 @@
 
     <h2 class="form-title">{{ titulo }}</h2>
 
-    <form method="post" class="form-box">
+    <form method="post" class="form-box" id="produccion-form">
         {% csrf_token %}
         {{ form.as_p }}
 
         <div class="acciones-form">
-            <button type="submit" class="btn btn-produce">
+            <button type="submit" class="btn btn-produce" id="acciones-form" style="display: none;">
                 Producir
             </button>
 
@@ -22,6 +22,105 @@
         </div>
     </form>
 
+    <div id="preview-container" style="margin-top: 20px; display: block;">
+        <h3>Consumo Estimado en Tiempo Real</h3>
+        <table id="consumos-table" class="table">
+            <thead>
+                <tr>
+                    <th>Materia Prima</th>
+                    <th>Cantidad Requerida</th>
+                    <th>Unidad</th>
+                    <th>Stock Actual</th>
+                    <th>Suficiente</th>
+                    <th>Costo Unitario</th>
+                    <th>Costo Item</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Inicialmente vacía -->
+            </tbody>
+        </table>
+        <p id="costo-total">Costo Total Estimado: 0.00</p>
+    </div>
+
 </div>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('produccion-form');
+        const productoSelect = form.querySelector('#id_producto');
+        const cantidadInput = form.querySelector('#id_cantidad');
+        const tableBody = document.querySelector('#consumos-table tbody');
+        const costoTotalElem = document.getElementById('costo-total');
+        const accionesForm = document.getElementById('acciones-form');
+
+        let recetaData = []; // Datos de receta
+
+        function cargarReceta(productoId) {
+            if (!productoId) {
+                tableBody.innerHTML = ''; // Vacía tabla si no hay producto
+                costoTotalElem.textContent = 'Costo Total Estimado: 0.00';
+                accionesForm.style.display = 'none';
+                return;
+            }
+            fetch(`/get_receta/${productoId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    recetaData = data;
+                    actualizarPreview();
+                })
+                .catch(error => console.error('Error al cargar receta:', error));
+        }
+
+        function actualizarPreview() {
+            const cantidad = parseFloat(cantidadInput.value) || 0;
+            tableBody.innerHTML = '';
+            let costoTotal = 0;
+            let ocultarDatos = false;
+
+            recetaData.forEach(item => {
+                const requerido = (parseFloat(item.cantidad) * cantidad).toFixed(5);
+                const stockActual = parseFloat(item.materia_prima__cantidad);
+                const suficiente = stockActual >= requerido ? 'Si' : 'No';
+                const costoUnitario = parseFloat(item.materia_prima__costo).toFixed(2);
+                const costoItem = (requerido * costoUnitario).toFixed(2);
+                costoTotal += parseFloat(costoItem);
+                if (suficiente === "No") {
+                    ocultarDatos = true;
+                }
+                const row = `
+                <tr>
+                    <td>${item.materia_prima__nombre}</td>
+                    <td>${requerido}</td>
+                    <td>${item.materia_prima__unidad}</td>
+                    <td>${stockActual.toFixed(5)}</td>
+                    <td>${suficiente}</td>
+                    <td>${costoUnitario}</td>
+                    <td>${costoItem}</td>
+                </tr>
+            `;
+                tableBody.innerHTML += row;
+            });
+
+            if (cantidad <= 0 || recetaData.length === 0 || ocultarDatos) {
+                accionesForm.style.display = 'none';
+            } else {
+                accionesForm.style.display = 'flex';
+            }
+
+            costoTotalElem.textContent = `Costo Total Estimado: ${costoTotal.toFixed(2)}`;
+        }
+
+        productoSelect.addEventListener('change', function () {
+            cargarReceta(this.value);
+        });
+
+        cantidadInput.addEventListener('input', actualizarPreview);
+
+        // Cargar inicial si es edición
+        if (productoSelect.value) {
+            cargarReceta(productoSelect.value);
+        }
+    });
+</script>
 {% endblock %}
