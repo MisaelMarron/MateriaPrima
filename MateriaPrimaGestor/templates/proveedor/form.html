@@ -2,13 +2,26 @@
 {% block title %}{{ titulo }}{% endblock %}
 
 {% block content %}
-<h1>{{ titulo }}</h1>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
+<div class="form-container">
 
-    <button type="submit">Guardar</button>
-    <a href="{% url 'listar_proveedores' %}">Cancelar</a>
-</form>
+    <h2 class="form-title">{{ titulo }}</h2>
+
+    <form method="post" class="form-box">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <div class="acciones-form">
+            <button type="submit" class="btn btn-confirm">
+                Guardar
+            </button>
+
+            <a href="{% url 'listar_proveedores' %}" class="btn btn-delete">
+                Cancelar
+            </a>
+        </div>
+    </form>
+
+</div>
+
 {% endblock %}

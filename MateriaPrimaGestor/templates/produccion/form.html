@@ -1,15 +1,27 @@
 {% extends "base.html" %}
 {% block title %}{{ titulo }}{% endblock %}
+
 {% block content %}
 
-<h1>{{ titulo }}</h1>
+<div class="form-container">
 
-<form method="post">
-{% csrf_token %}
-{{ form.as_p }}
+    <h2 class="form-title">{{ titulo }}</h2>
 
-<button type="submit">Producir</button>
-<a href="{% url 'listar_producciones' %}">Cancelar</a>
-</form>
+    <form method="post" class="form-box">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <div class="acciones-form">
+            <button type="submit" class="btn btn-produce">
+                Producir
+            </button>
+
+            <a href="{% url 'listar_producciones' %}" class="btn btn-delete">
+                Cancelar
+            </a>
+        </div>
+    </form>
+
+</div>
 
 {% endblock %}

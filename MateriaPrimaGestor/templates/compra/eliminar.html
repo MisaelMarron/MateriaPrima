@@ -1,12 +1,31 @@
 {% extends "base.html" %}
-{% block title %}Eliminar{% endblock %}
+{% block title %}Eliminar Compra{% endblock %}
 
 {% block content %}
-<h2>Eliminar compra {{ compra.codigo }}?</h2>
 
-<form method="post">
-{% csrf_token %}
-<button type="submit">Sí, eliminar</button>
-<a href="{% url 'listar_compras' %}">Cancelar</a>
-</form>
+<div class="form-container">
+
+    <h2 class="form-title">Eliminar Compra</h2>
+
+    <p style="text-align:center; margin-bottom:1.5rem;">
+        ¿Estás seguro que deseas eliminar la compra 
+        <strong>{{ compra.codigo }}</strong>?
+    </p>
+
+    <form method="post" class="delete-form">
+        {% csrf_token %}
+
+        <div class="acciones-form">
+            <button type="submit" class="btn btn-delete">
+                Sí, eliminar
+            </button>
+
+            <a href="{% url 'listar_compras' %}" class="btn btn-new">
+                Cancelar
+            </a>
+        </div>
+    </form>
+
+</div>
+
 {% endblock %}

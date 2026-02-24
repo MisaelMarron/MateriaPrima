@@ -1,12 +1,33 @@
 {% extends "base.html" %}
-{% block title %}Eliminar{% endblock %}
+{% block title %}Eliminar Materia{% endblock %}
 
 {% block content %}
-<h2>Eliminar {{ materia.nombre }}?</h2>
 
-<form method="post">
-{% csrf_token %}
-<button type="submit">Sí, eliminar</button>
-<a href="{% url 'listar_materias' %}">Cancelar</a>
-</form>
+<div class="form-container">
+
+    <h2 class="form-title">
+        Eliminar Materia
+    </h2>
+
+    <p style="text-align:center; margin-bottom:1.5rem;">
+        ¿Estás seguro que deseas eliminar 
+        <strong>{{ materia.nombre }}</strong>?
+    </p>
+
+    <form method="post" class="delete-form">
+        {% csrf_token %}
+
+        <div class="acciones-form">
+            <button type="submit" class="btn btn-delete">
+                Sí, eliminar
+            </button>
+
+            <a href="{% url 'listar_materias' %}" class="btn btn-new">
+                Cancelar
+            </a>
+        </div>
+    </form>
+
+</div>
+
 {% endblock %}

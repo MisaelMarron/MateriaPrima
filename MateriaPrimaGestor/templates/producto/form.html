@@ -2,35 +2,52 @@
 {% block title %}{{ titulo }}{% endblock %}
 
 {% block content %}
-<h1>{{ titulo }}</h1>
 
-<form method="post">
-{% csrf_token %}
+<div class="producto-container">
 
-<h3>Datos del Producto</h3>
-{{ form.as_p }}
+    <h2 class="form-title">{{ titulo }}</h2>
 
-<h3>Receta</h3>
-{{ formset.management_form }}
+    <form method="post" class="form-box">
+        {% csrf_token %}
 
-<table>
-<tr>
-<th>Materia Prima</th>
-<th>Cantidad</th>
-<th>Eliminar</th>
-</tr>
+        <h3 style="margin-top:1rem;">Datos del Producto</h3>
+        {{ form.as_p }}
 
-{% for f in formset %}
-<tr>
-<td>{{ f.materia_prima }}</td>
-<td>{{ f.cantidad }}</td>
-<td>{{ f.DELETE }}</td>
-</tr>
-{% endfor %}
-</table>
+        <h3 style="margin-top:2rem;">Receta</h3>
 
-<button type="submit">Guardar</button>
-<a href="{% url 'listar_productos' %}">Cancelar</a>
-</form>
+        {{ formset.management_form }}
+
+        <table class="produccion-table">
+            <thead>
+                <tr>
+                    <th>Materia Prima</th>
+                    <th>Cantidad</th>
+                    <th>Eliminar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in formset %}
+                <tr>
+                    <td>{{ f.materia_prima }}</td>
+                    <td>{{ f.cantidad }}</td>
+                    <td style="text-align:center;">{{ f.DELETE }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="acciones-form" style="margin-top:1.5rem;">
+            <button type="submit" class="btn btn-confirm">
+                Guardar
+            </button>
+
+            <a href="{% url 'listar_productos' %}" class="btn btn-delete">
+                Cancelar
+            </a>
+        </div>
+
+    </form>
+
+</div>
 
 {% endblock %}
