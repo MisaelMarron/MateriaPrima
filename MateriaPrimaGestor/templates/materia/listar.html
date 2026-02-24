@@ -32,9 +32,9 @@
                 <td>{{ m.cantidad }}</td>
                 <td>{{ m.costo }}</td>
                 <td class="acciones">
-                    <a href="{% url 'editar_materia' m.codigo %}" class="btn btn-edit">Editar</a>
-                    <a href="{% url 'ajustar_materia' m.codigo %}" class="btn btn-produce">Ajustar</a>
-                    <a href="{% url 'eliminar_materia' m.codigo %}" class="btn btn-delete">Eliminar</a>
+                    <a href="{% url 'editar_materia' m.id %}" class="btn btn-edit">Editar</a>
+                    <a href="{% url 'ajustar_materia' m.id %}" class="btn btn-produce">Ajustar</a>
+                    <a href="{% url 'eliminar_materia' m.id %}" class="btn btn-delete">Eliminar</a>
                 </td>
             </tr>
             {% empty %}

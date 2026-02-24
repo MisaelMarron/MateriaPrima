@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models.functions import Substr
+from django.db.models import Max, IntegerField
 from django.core.validators import MinValueValidator
 
 class Proveedor(models.Model):
@@ -8,7 +10,8 @@ class Proveedor(models.Model):
         return f"{self.nombre}"
 
 class MateriaPrima(models.Model):
-    codigo = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True)
+    codigo = models.CharField(max_length=10, unique=True)
     UNIDADES = [("KG", "Kilogramos"), ("L", "Litros"), ("G", "Gramos"), ("ML", "Mililitros"), ("U", "Unidad")]
     nombre = models.CharField(max_length=150, unique=True)
     unidad = models.CharField(max_length=5, choices=UNIDADES)
@@ -18,6 +21,16 @@ class MateriaPrima(models.Model):
     fecha_actualizacion = models.DateTimeField(auto_now=True)
     def __str__(self):
         return self.nombre
+    def save(self, *args, **kwargs):
+        if not self.codigo:
+            valid_codes = MateriaPrima.objects.filter(codigo__regex=r'^INS\d{3}$')
+            if valid_codes.exists():
+                max_code = valid_codes.aggregate(max_num=Max(Substr('codigo', 4, output_field=IntegerField())))['max_num']
+                next_number = max_code + 1
+            else:
+                next_number = 1
+            self.codigo = f'INS{next_number:03d}'
+        super().save(*args, **kwargs)
 
 class Compra(models.Model):
     codigo = models.AutoField(primary_key=True)
@@ -29,7 +42,8 @@ class Compra(models.Model):
     fecha_actualizacion = models.DateTimeField(auto_now=True)
 
 class ProductoTerminado(models.Model):
-    codigo = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True)
+    codigo = models.CharField(max_length=10, unique=True)
     nombre = models.CharField(max_length=150, unique=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
