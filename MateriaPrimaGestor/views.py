@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout
 from django.contrib import messages
 from django.db import transaction
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from .forms import *
 from .models import *
 
@@ -152,7 +152,7 @@ def crear_compra(request):
         # Aumentar inventario
         materia.cantidad += compra.cantidad
         # Actualizar costo al último comprado
-        materia.costo = compra.costo
+        materia.costo = (Decimal(compra.costo) / Decimal(compra.cantidad)).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
         materia.save()
         compra.save()
         messages.success(request, "Compra registrada correctamente.")
@@ -175,7 +175,7 @@ def editar_compra(request, pk):
         # Aplicar nuevo efecto
         materia.cantidad += compra_editada.cantidad
         # Actualizar costo
-        materia.costo = compra_editada.costo
+        materia.costo = (Decimal(compra_editada.costo) / Decimal(compra_editada.cantidad)).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
         materia.save()
         compra_editada.save()
         messages.success(request, "Compra actualizada correctamente.")

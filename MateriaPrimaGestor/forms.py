@@ -25,7 +25,7 @@ class MateriaPrimaCreateForm(forms.ModelForm):
 class MateriaPrimaUpdateForm(forms.ModelForm):
     class Meta:
         model = MateriaPrima
-        fields = ["nombre", "unidad", "costo"]
+        fields = ["codigo", "nombre", "unidad", "costo"]
 
 class MateriaPrimaAjusteForm(forms.Form):
     TIPO = (
@@ -45,7 +45,7 @@ class CompraForm(forms.ModelForm):
 class ProductoForm(forms.ModelForm):
     class Meta:
         model = ProductoTerminado
-        fields = ["nombre"]
+        fields = ["nombre", "codigo"]
 
 class DetalleProductoForm(forms.ModelForm):
     class Meta:
