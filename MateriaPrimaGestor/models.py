@@ -45,6 +45,7 @@ class ProductoTerminado(models.Model):
     id = models.AutoField(primary_key=True)
     codigo = models.CharField(max_length=10, unique=True)
     nombre = models.CharField(max_length=150, unique=True)
+    cantidad = models.DecimalField(max_digits=12, decimal_places=5, default=0, validators=[MinValueValidator(0)])
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
     def __str__(self):

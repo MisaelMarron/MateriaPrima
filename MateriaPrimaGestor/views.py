@@ -254,106 +254,93 @@ def listar_producciones(request):
 @transaction.atomic
 def crear_produccion(request):
     form = ProduccionForm(request.POST or None)
-    if request.method == "POST":
-        if form.is_valid():
-            producto = form.cleaned_data["producto"]
-            cantidad_producir = form.cleaned_data["cantidad"]
-            receta = DetalleProducto.objects.filter(producto=producto)
-            if not receta.exists():
-                messages.error(request, "El producto no tiene receta.")
-                return redirect("crear_produccion")
-            
-            if 'confirm' in request.POST:
-                # VALIDAR STOCK (revalidar por si cambió)
-                for item in receta:
-                    requerido = item.cantidad * cantidad_producir
-                    if item.materia_prima.cantidad < requerido:
-                        messages.error(request, f"Stock insuficiente de {item.materia_prima.nombre}")
-                        return redirect("crear_produccion")
-                
-                # CREAR PRODUCCIÓN
-                produccion = form.save()
-                costo_total = Decimal("0")
-                # DESCONTAR + CREAR DETALLE HISTÓRICO
-                for item in receta:
-                    materia = item.materia_prima
-                    requerido = item.cantidad * cantidad_producir
-                    materia.cantidad -= requerido
-                    materia.save()
-                    costo = materia.costo
-                    costo_total += requerido * costo
-                    ProduccionDetalle.objects.create(
-                        produccion=produccion,
-                        materia_prima=materia,
-                        cantidad=requerido,
-                        costo=costo
-                    )
-                messages.success(request, f"Producción registrada. Costo total: {round(costo_total,2)}")
-                return redirect("listar_producciones")
-            else:
-                # Modo calculadora: calcular consumo sin guardar
-                consumos = []
-                costo_total = Decimal("0")
-                stock_suficiente = True
-                for item in receta:
-                    requerido = item.cantidad * cantidad_producir
-                    materia = item.materia_prima
-                    suficiente = materia.cantidad >= requerido
-                    if not suficiente:
-                        stock_suficiente = False
-                    costo_unitario = materia.costo
-                    costo_item = requerido * costo_unitario
-                    costo_total += costo_item
-                    consumos.append({
-                        'materia': materia.nombre,
-                        'unidad': materia.unidad,
-                        'requerido': requerido,
-                        'stock_actual': materia.cantidad,
-                        'suficiente': suficiente,
-                        'costo_unitario': costo_unitario,
-                        'costo_item': costo_item
-                    })
-                if not stock_suficiente:
-                    messages.warning(request, "Algunos materiales no tienen stock suficiente.")
-                context = {
-                    "form": form,
-                    "titulo": "Nueva Producción",
-                    "consumos": consumos,
-                    "costo_total": round(costo_total, 2),
-                    "preview": True  # Para condicionar en la plantilla
-                }
-                return render(request, "produccion/form.html", context)
-    else:
-        # GET: mostrar formulario vacío
-        context = {"form": form, "titulo": "Nueva Producción"}
-        return render(request, "produccion/form.html", context)
+    if request.method == "POST" and form.is_valid():
+        producto = form.cleaned_data["producto"]
+        cantidad_producir = form.cleaned_data["cantidad"]
+        receta = DetalleProducto.objects.filter(producto=producto)
+
+        if not receta.exists():
+            messages.error(request, "El producto no tiene receta.")
+            return render(request, "produccion/form.html", {"form": form, "titulo": "Nueva Producción"})
+
+        # VALIDAR STOCK
+        for item in receta:
+            requerido = item.cantidad * cantidad_producir
+            if item.materia_prima.cantidad < requerido:
+                messages.error(request, f"Stock insuficiente de {item.materia_prima.nombre}")
+                return render(request, "produccion/form.html", {"form": form, "titulo": "Nueva Producción"})
+
+        # GUARDAR
+        produccion = form.save()
+        producto.cantidad += cantidad_producir
+        producto.save()
+
+        costo_total = Decimal("0")
+        for item in receta:
+            materia = item.materia_prima
+            requerido = item.cantidad * cantidad_producir
+            materia.cantidad -= requerido
+            materia.save()
+            costo = materia.costo
+            costo_total += requerido * costo
+            ProduccionDetalle.objects.create(
+                produccion=produccion,
+                materia_prima=materia,
+                cantidad=requerido,
+                costo=costo
+            )
+
+        messages.success(request, f"Producción registrada. Costo total: {round(costo_total, 2)}")
+        return redirect("listar_producciones")
+
+    return render(request, "produccion/form.html", {"form": form, "titulo": "Nueva Producción"})
+
 
 @login_required
 @transaction.atomic
 def editar_produccion(request, pk):
     produccion = get_object_or_404(ProduccionProducto, pk=pk)
     form = ProduccionForm(request.POST or None, instance=produccion)
-    if form.is_valid():
-        # DEVOLVER STOCK ANTERIOR
-        detalles_anteriores = ProduccionDetalle.objects.filter(produccion=produccion)
-        for det in detalles_anteriores:
-            materia = det.materia_prima
-            materia.cantidad += det.cantidad
-            materia.save()
-        detalles_anteriores.delete()
-        # VOLVER A PRODUCIR CON NUEVA CANTIDAD
+
+    if request.method == "POST" and form.is_valid():
         producto = form.cleaned_data["producto"]
         nueva_cantidad = form.cleaned_data["cantidad"]
         receta = DetalleProducto.objects.filter(producto=producto)
+
+        if not receta.exists():
+            messages.error(request, "El producto no tiene receta.")
+            return render(request, "produccion/form.html", {"form": form, "titulo": "Editar Producción"})
+
+        # 1. VALIDAR STOCK SIMULANDO DEVOLUCIÓN EN MEMORIA
+        detalles_anteriores = ProduccionDetalle.objects.filter(produccion=produccion)
+        stock_simulado = {
+            det.materia_prima.pk: det.materia_prima.cantidad + det.cantidad
+            for det in detalles_anteriores
+        }
         for item in receta:
-            requerido = item.cantidad * nueva_cantidad
-            materia = item.materia_prima
-            if materia.cantidad < requerido:
-                messages.error(request, f"Stock insuficiente de {materia.nombre}")
-                return redirect("editar_produccion", pk=pk)
+            mp_pk = item.materia_prima.pk
+            stock_disponible = stock_simulado.get(mp_pk, item.materia_prima.cantidad)
+            if stock_disponible < item.cantidad * nueva_cantidad:
+                messages.error(request, f"Stock insuficiente de {item.materia_prima.nombre}")
+                return render(request, "produccion/form.html", {"form": form, "titulo": "Editar Producción"})
+
+        # 2. DEVOLVER STOCK ANTERIOR
+        for det in detalles_anteriores:
+            det.materia_prima.cantidad += det.cantidad
+            det.materia_prima.save()
+
+        produccion.producto.cantidad -= produccion.cantidad
+        produccion.producto.save()
+        detalles_anteriores.delete()
+
+        # 3. GUARDAR Y APLICAR NUEVA PRODUCCIÓN
         produccion = form.save()
+        produccion.producto.cantidad += nueva_cantidad
+        produccion.producto.save()
+
         for item in receta:
             materia = item.materia_prima
+            materia.refresh_from_db()
             requerido = item.cantidad * nueva_cantidad
             materia.cantidad -= requerido
             materia.save()
@@ -361,10 +348,12 @@ def editar_produccion(request, pk):
                 produccion=produccion,
                 materia_prima=materia,
                 cantidad=requerido,
-                costo=materia.costo  # costo histórico nuevo
+                costo=materia.costo
             )
+
         messages.success(request, "Producción recalculada correctamente.")
         return redirect("listar_producciones")
+
     return render(request, "produccion/form.html", {"form": form, "titulo": "Editar Producción"})
 
 @login_required

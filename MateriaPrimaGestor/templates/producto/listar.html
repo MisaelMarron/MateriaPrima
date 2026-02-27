@@ -17,6 +17,7 @@
             <tr>
                 <th>ID</th>
                 <th>Nombre</th>
+                <th>Stock</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -25,6 +26,7 @@
             <tr>
                 <td>{{ p.codigo }}</td>
                 <td>{{ p.nombre }}</td>
+                <td>{{ p.cantidad }}</td>
                 <td class="acciones">
                     <a href="{% url 'editar_producto' p.id %}" class="btn btn-edit">
                         Editar
