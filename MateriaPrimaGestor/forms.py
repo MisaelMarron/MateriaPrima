@@ -56,7 +56,7 @@ DetalleProductoFormSet = inlineformset_factory(
     ProductoTerminado,
     DetalleProducto,
     form=DetalleProductoForm,
-    extra=1,
+    extra=0,
     can_delete=True
 )
 

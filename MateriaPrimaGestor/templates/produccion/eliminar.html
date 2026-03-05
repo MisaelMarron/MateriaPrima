@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Eliminar Producto{% endblock %}
+
+{% block content %}
+
+<div class="form-container">
+
+    <h2 class="form-title">Eliminar Produccion</h2>
+
+    <p style="text-align:center; margin-bottom:1.5rem;">
+        ¿Estás seguro que deseas eliminar la produccion de 
+        <strong>{{ produccion.producto.nombre }}</strong>?
+    </p>
+
+    <form method="post" class="delete-form">
+        {% csrf_token %}
+
+        <div class="acciones-form">
+            <button type="submit" class="btn btn-delete">
+                Sí, eliminar
+            </button>
+
+            <a href="{% url 'listar_producciones' %}" class="btn btn-new">
+                Cancelar
+            </a>
+        </div>
+    </form>
+
+</div>
+
+{% endblock %}

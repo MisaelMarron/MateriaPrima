@@ -1,53 +1,732 @@
 {% extends "base.html" %}
 {% block title %}{{ titulo }}{% endblock %}
-
 {% block content %}
 
-<div class="producto-container">
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 
-    <h2 class="form-title">{{ titulo }}</h2>
+    :root {
+        --bg: #f5f4f0;
+        --surface: #fff;
+        --border: #e2e0d8;
+        --focus: #1a1a1a;
+        --text: #1a1a1a;
+        --muted: #888880;
+        --accent: #1a1a1a;
+        --danger: #c0392b;
+        --danger-bg: #fdf0ee;
+        --radius: 10px;
+        --shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
+    }
 
-    <form method="post" class="form-box">
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: 'DM Sans', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+    }
+
+    .page-wrap {
+        max-width: 760px;
+        margin: 48px auto;
+        padding: 0 24px 80px;
+    }
+
+    .page-header {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        margin-bottom: 32px;
+    }
+
+    .page-header h2 {
+        font-size: 1.55rem;
+        font-weight: 600;
+        letter-spacing: -0.03em;
+    }
+
+    .badge {
+        font-family: 'DM Mono', monospace;
+        font-size: 0.68rem;
+        background: #f0efe9;
+        color: var(--muted);
+        padding: 3px 9px;
+        border-radius: 4px;
+        border: 1px solid var(--border);
+    }
+
+    .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    .card-section {
+        padding: 28px 32px;
+    }
+
+    .card-section+.card-section {
+        border-top: 1px solid var(--border);
+    }
+
+    .section-label {
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 18px;
+    }
+
+    .field-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .field label {
+        font-size: 0.77rem;
+        font-weight: 500;
+        color: var(--muted);
+    }
+
+    .field input,
+    .field select {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.9rem;
+        padding: 10px 13px;
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        background: var(--bg);
+        color: var(--text);
+        outline: none;
+        transition: border-color .15s, box-shadow .15s;
+        width: 100%;
+    }
+
+    .field input:focus,
+    .field select:focus {
+        border-color: var(--focus);
+        box-shadow: 0 0 0 3px rgba(45, 45, 45, 0.07);
+        background: #fff;
+    }
+
+    .errorlist {
+        list-style: none;
+        font-size: 0.74rem;
+        color: var(--danger);
+        margin-top: 2px;
+    }
+
+    .errors-banner {
+        background: var(--danger-bg);
+        border: 1px solid #f5c6c1;
+        border-radius: var(--radius);
+        padding: 14px 18px;
+        margin-bottom: 20px;
+        font-size: 0.84rem;
+        color: var(--danger);
+    }
+
+    .errors-banner strong {
+        display: block;
+        margin-bottom: 6px;
+    }
+
+    .errors-banner ul {
+        padding-left: 16px;
+    }
+
+    .receta-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.88rem;
+    }
+
+    .receta-table thead tr {
+        border-bottom: 2px solid var(--border);
+    }
+
+    .receta-table th {
+        text-align: left;
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        padding: 0 10px 10px;
+    }
+
+    .receta-table tbody tr {
+        border-bottom: 1px solid var(--border);
+        transition: background .1s;
+    }
+
+    .receta-table tbody tr:hover {
+        background: #fafaf7;
+    }
+
+    .receta-table td {
+        padding: 8px 10px;
+        vertical-align: middle;
+        font-size: 0.9rem;
+    }
+
+    .receta-table td:last-child {
+        text-align: center;
+        width: 48px;
+    }
+
+    .receta-table td input[type=number] {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.88rem;
+        padding: 7px 10px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--bg);
+        color: var(--text);
+        width: 120px;
+        outline: none;
+        transition: border-color .15s;
+    }
+
+    .receta-table td input[type=number]:focus {
+        border-color: var(--focus);
+        background: #fff;
+    }
+
+    .nombre-cell {
+        font-weight: 500;
+    }
+
+    .unidad-tag {
+        font-family: 'DM Mono', monospace;
+        font-size: 0.72rem;
+        background: #f0efe9;
+        color: var(--muted);
+        padding: 2px 7px;
+        border-radius: 4px;
+        margin-left: 6px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 36px 0;
+        color: var(--muted);
+        font-size: 0.84rem;
+    }
+
+    .empty-state span {
+        display: block;
+        font-size: 1.8rem;
+        margin-bottom: 8px;
+        opacity: .35;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.84rem;
+        font-weight: 500;
+        padding: 9px 18px;
+        border-radius: 7px;
+        border: none;
+        cursor: pointer;
+        transition: all .15s;
+        text-decoration: none;
+    }
+
+    .btn-primary {
+        background: var(--accent);
+        color: #fff;
+    }
+
+    .btn-primary:hover {
+        background: #000;
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: var(--text);
+        border: 1px solid var(--border);
+    }
+
+    .btn-outline:hover {
+        border-color: var(--focus);
+        background: #f0efe9;
+    }
+
+    .btn-ghost {
+        background: transparent;
+        color: var(--muted);
+        border: 1px dashed var(--border);
+        width: 100%;
+        justify-content: center;
+        margin-top: 12px;
+        font-size: 0.82rem;
+    }
+
+    .btn-ghost:hover {
+        border-color: var(--focus);
+        color: var(--text);
+        background: #f0efe9;
+    }
+
+    .btn-icon {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 5px 7px;
+        border-radius: 5px;
+        color: var(--muted);
+        transition: all .15s;
+        font-size: 0.95rem;
+        line-height: 1;
+    }
+
+    .btn-icon:hover {
+        background: var(--danger-bg);
+        color: var(--danger);
+    }
+
+    .form-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 20px 32px;
+        border-top: 1px solid var(--border);
+        background: var(--bg);
+    }
+
+    .hidden-mgmt {
+        display: none;
+    }
+
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        backdrop-filter: blur(2px);
+    }
+
+    .modal-overlay.open {
+        display: flex;
+    }
+
+    .modal {
+        background: var(--surface);
+        border-radius: var(--radius);
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
+        width: 420px;
+        max-width: 95vw;
+        max-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        animation: modalIn .18s ease;
+    }
+
+    @keyframes modalIn {
+        from {
+            transform: translateY(12px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .modal-header {
+        padding: 20px 24px 16px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .modal-header h3 {
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.1rem;
+        color: var(--muted);
+        padding: 4px 6px;
+        border-radius: 5px;
+    }
+
+    .modal-close:hover {
+        background: #f0efe9;
+        color: var(--text);
+    }
+
+    .modal-search {
+        padding: 12px 24px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .modal-search input {
+        width: 100%;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.88rem;
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        background: var(--bg);
+        outline: none;
+    }
+
+    .modal-search input:focus {
+        border-color: var(--focus);
+    }
+
+    .modal-list {
+        overflow-y: auto;
+        flex: 1;
+        padding: 8px 0;
+    }
+
+    .modal-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 24px;
+        cursor: pointer;
+        transition: background .1s;
+        font-size: 0.9rem;
+    }
+
+    .modal-item:hover {
+        background: #f5f4f0;
+    }
+
+    .modal-item .mp-nombre {
+        font-weight: 500;
+    }
+
+    .modal-item .mp-meta {
+        font-size: 0.76rem;
+        color: var(--muted);
+        font-family: 'DM Mono', monospace;
+    }
+
+    .modal-item .mp-add {
+        font-size: 0.8rem;
+        color: var(--muted);
+        opacity: 0;
+        transition: opacity .1s;
+    }
+
+    .modal-item:hover .mp-add {
+        opacity: 1;
+        color: var(--accent);
+    }
+
+    .modal-empty {
+        text-align: center;
+        padding: 32px;
+        color: var(--muted);
+        font-size: 0.85rem;
+    }
+</style>
+
+<div class="page-wrap">
+
+    <div class="page-header">
+        <h2>{{ titulo }}</h2>
+        <span class="badge">Producto</span>
+    </div>
+
+    {% if form.errors or formset.non_form_errors %}
+    <div class="errors-banner">
+        <strong>Corrige los errores antes de guardar:</strong>
+        <ul>
+            {% for field in form %}
+            {% for error in field.errors %}
+            <li>{{ field.label }}: {{ error }}</li>
+            {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+            {% for error in formset.non_form_errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+            {% for f in formset %}
+            {% for field in f %}
+            {% for error in field.errors %}
+            {% if not f.cleaned_data.DELETE %}
+            <li>Fila {{ forloop.parentloop.parentloop.counter }}: {{ error }}</li>
+            {% endif %}
+            {% endfor %}
+            {% endfor %}
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="post" id="producto-form">
         {% csrf_token %}
+        <div class="hidden-mgmt">{{ formset.management_form }}</div>
 
-        <h3 style="margin-top:1rem;">Datos del Producto</h3>
-        {{ form.as_p }}
+        <div class="card">
 
-        <h3 style="margin-top:2rem;">Receta</h3>
+            <div class="card-section">
+                <div class="section-label">Datos del producto</div>
+                <div class="field-group">
+                    {% for field in form %}
+                    <div class="field">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                        <ul class="errorlist">
+                            {% for e in field.errors %}
+                            <li>{{ e }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
 
-        {{ formset.management_form }}
+            <div class="card-section">
+                <div class="section-label" style="margin-bottom:14px;">Receta de materias primas</div>
 
-        <table class="produccion-table">
-            <thead>
-                <tr>
-                    <th>Materia Prima</th>
-                    <th>Cantidad</th>
-                    <th>Eliminar</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for f in formset %}
-                <tr>
-                    <td>{{ f.materia_prima }}</td>
-                    <td>{{ f.cantidad }}</td>
-                    <td style="text-align:center;">{{ f.DELETE }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                <table class="receta-table" id="receta-table" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th>Materia Prima</th>
+                            <th style="width:150px;">Cantidad</th>
+                            <th style="width:48px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="receta-body">
+                        {% for f in formset %}
+                        {% if f.instance.materia_prima_id %}
+                        <tr class="receta-row" data-mp-id="{{ f.instance.materia_prima_id }}"
+                            data-row-id="{{ f.instance.pk }}">
+                            <input type="hidden" name="detalleproducto_set-{{ forloop.counter0 }}-codigo"
+                                value="{{ f.instance.pk }}">
+                            <input type="hidden" name="detalleproducto_set-{{ forloop.counter0 }}-materia_prima"
+                                value="{{ f.instance.materia_prima_id }}">
+                            <input type="hidden" name="detalleproducto_set-{{ forloop.counter0 }}-DELETE" value=""
+                                class="delete-flag">
+                            <td class="nombre-cell">
+                                {{ f.instance.materia_prima.nombre }}
+                                <span class="unidad-tag">{{ f.instance.materia_prima.unidad }}</span>
+                            </td>
+                            <td>{{ f.cantidad }}</td>
+                            <td>
+                                <button type="button" class="btn-icon delete-row-btn" title="Eliminar">&#x2715;</button>
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
 
-        <div class="acciones-form" style="margin-top:1.5rem;">
-            <button type="submit" class="btn btn-confirm">
-                Guardar
-            </button>
+                <div id="empty-state" class="empty-state">
+                    <span>&#x1F4CB;</span>
+                    Sin ingredientes. Usa el boton de abajo para agregar.
+                </div>
 
-            <a href="{% url 'listar_productos' %}" class="btn btn-delete">
-                Cancelar
-            </a>
+                <button type="button" class="btn btn-ghost" id="open-modal-btn">+ Agregar materia prima</button>
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'listar_productos' %}" class="btn btn-outline">Cancelar</a>
+                <button type="submit" class="btn btn-primary">Guardar producto</button>
+            </div>
+
         </div>
-
     </form>
-
 </div>
+
+<div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Agregar materia prima</h3>
+            <button class="modal-close" id="modal-close">&#x2715;</button>
+        </div>
+        <div class="modal-search">
+            <input type="text" id="modal-search" placeholder="Buscar por nombre...">
+        </div>
+        <div class="modal-list" id="modal-list"></div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const body = document.getElementById('receta-body');
+        const emptyState = document.getElementById('empty-state');
+        const recetaTable = document.getElementById('receta-table');
+        const totalInput = document.getElementById('id_detalleproducto_set-TOTAL_FORMS');
+        const overlay = document.getElementById('modal-overlay');
+        const modalList = document.getElementById('modal-list');
+        const searchInput = document.getElementById('modal-search');
+
+        let totalForms = parseInt(totalInput.value, 10);
+        let allMaterias = [];
+
+        fetch('/get_materias_primas/')
+            .then(function (r) { return r.json(); })
+            .then(function (data) { allMaterias = data; });
+
+        function usedIds() {
+            const used = new Set();
+            body.querySelectorAll('tr.receta-row').forEach(function (row) {
+                if (row.style.display !== 'none' && row.dataset.mpId) {
+                    used.add(String(row.dataset.mpId));
+                }
+            });
+            return used;
+        }
+
+        function checkEmpty() {
+            const count = body.querySelectorAll('tr.receta-row[style*="display: none"]').length;
+            const total = body.querySelectorAll('tr.receta-row').length;
+            const visible = total - count;
+            emptyState.style.display = visible === 0 ? 'block' : 'none';
+            recetaTable.style.display = visible === 0 ? 'none' : 'table';
+        }
+
+        function renderModalList(query) {
+            const used = usedIds();
+            const q = (query || '').toLowerCase();
+            const available = allMaterias.filter(function (mp) {
+                return !used.has(String(mp.id)) && mp.nombre.toLowerCase().includes(q);
+            });
+            if (available.length === 0) {
+                modalList.innerHTML = '<div class="modal-empty">No hay materias disponibles.</div>';
+                return;
+            }
+            modalList.innerHTML = '';
+            available.forEach(function (mp) {
+                const div = document.createElement('div');
+                div.className = 'modal-item';
+                div.innerHTML =
+                    '<div>' +
+                    '<div class="mp-nombre">' + mp.nombre + '</div>' +
+                    '<div class="mp-meta">' + mp.unidad + ' &mdash; stock: ' + parseFloat(mp.cantidad).toFixed(2) + '</div>' +
+                    '</div>' +
+                    '<span class="mp-add">+ Agregar</span>';
+                div.addEventListener('click', function () { addRow(mp); });
+                modalList.appendChild(div);
+            });
+        }
+
+        function addRow(mp) {
+            // Si ya existe una fila oculta (eliminada) para esta materia, restaurarla
+            const existing = body.querySelector('tr.receta-row[data-mp-id=""][data-row-id]');
+            if (existing) {
+                const allHidden = body.querySelectorAll('tr.receta-row');
+                for (let i = 0; i < allHidden.length; i++) {
+                    const row = allHidden[i];
+                    if (row.style.display === 'none') {
+                        const mpInput = row.querySelector('input[name$="-materia_prima"]');
+                        if (mpInput && mpInput.value === String(mp.id)) {
+                            row.style.display = '';
+                            row.dataset.mpId = mp.id;
+                            row.querySelector('.delete-flag').value = '';
+                            closeModal();
+                            checkEmpty();
+                            return;
+                        }
+                    }
+                }
+            }
+
+            const idx = totalForms;
+            const tr = document.createElement('tr');
+            tr.className = 'receta-row';
+            tr.dataset.mpId = mp.id;
+            tr.dataset.rowId = '';
+            tr.innerHTML =
+                '<input type="hidden" name="detalleproducto_set-' + idx + '-codigo" value="">' +
+                '<input type="hidden" name="detalleproducto_set-' + idx + '-materia_prima" value="' + mp.id + '">' +
+                '<input type="hidden" name="detalleproducto_set-' + idx + '-DELETE" value="" class="delete-flag">' +
+                '<td class="nombre-cell">' +
+                mp.nombre +
+                '<span class="unidad-tag">' + mp.unidad + '</span>' +
+                '</td>' +
+                '<td>' +
+                '<input type="number" step="0.00001" min="0"' +
+                ' name="detalleproducto_set-' + idx + '-cantidad"' +
+                ' id="id_detalleproducto_set-' + idx + '-cantidad"' +
+                ' placeholder="0.00000">' +
+                '</td>' +
+                '<td>' +
+                '<button type="button" class="btn-icon delete-row-btn" title="Eliminar">&#x2715;</button>' +
+                '</td>';
+            body.appendChild(tr);
+            totalForms++;
+            totalInput.value = totalForms;
+            tr.querySelector('input[type=number]').focus();
+            closeModal();
+            checkEmpty();
+        }
+
+        body.addEventListener('click', function (e) {
+            const btn = e.target.closest('.delete-row-btn');
+            if (!btn) return;
+            const row = btn.closest('tr.receta-row');
+            const deleteFlag = row.querySelector('.delete-flag');
+            const rowId = row.dataset.rowId;
+            if (!rowId) {
+                row.remove();
+                totalForms--;
+                totalInput.value = totalForms;
+            } else {
+                deleteFlag.value = 'on';
+                row.style.display = 'none';
+                row.dataset.mpId = '';
+            }
+            checkEmpty();
+        });
+
+        document.getElementById('open-modal-btn').addEventListener('click', function () {
+            searchInput.value = '';
+            renderModalList('');
+            overlay.classList.add('open');
+            searchInput.focus();
+        });
+
+        function closeModal() { overlay.classList.remove('open'); }
+
+        document.getElementById('modal-close').addEventListener('click', closeModal);
+        overlay.addEventListener('click', function (e) { if (e.target === overlay) closeModal(); });
+        searchInput.addEventListener('input', function () { renderModalList(this.value); });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+
+        checkEmpty();
+    })();
+</script>
 
 {% endblock %}

@@ -202,33 +202,44 @@ def listar_productos(request):
 def crear_producto(request):
     form = ProductoForm(request.POST or None)
     formset = DetalleProductoFormSet(request.POST or None)
-    if form.is_valid() and formset.is_valid():
-        producto = form.save()
-        formset.instance = producto
-        formset.save()
-        messages.success(request, "Producto y receta creados correctamente.")
-        return redirect("listar_productos")
+    if request.method == "POST":
+        if form.is_valid() and formset.is_valid():
+            producto = form.save()
+            formset.instance = producto
+            formset.save()
+            messages.success(request, "Producto y receta creados correctamente.")
+            return redirect("listar_productos")
+        else:
+            messages.error(request, "Corrige los errores del formulario.")
     return render(request, "producto/form.html", {
         "form": form,
         "formset": formset,
-        "titulo": "Crear Producto"
+        "titulo": "Crear Producto",
     })
+
 
 @login_required
 def editar_producto(request, pk):
     producto = get_object_or_404(ProductoTerminado, pk=pk)
     form = ProductoForm(request.POST or None, instance=producto)
     formset = DetalleProductoFormSet(request.POST or None, instance=producto)
-    if form.is_valid() and formset.is_valid():
-        form.save()
-        formset.save()
-        messages.success(request, "Receta actualizada correctamente.")
-        return redirect("listar_productos")
+    if request.method == "POST":
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            messages.success(request, "Receta actualizada correctamente.")
+            return redirect("listar_productos")
+        else:
+            print("FORM ERRORS:", form.errors)
+            print("FORMSET ERRORS:", formset.errors)
+            print("FORMSET NON FORM:", formset.non_form_errors())
+            messages.error(request, "Corrige los errores del formulario.")
     return render(request, "producto/form.html", {
         "form": form,
         "formset": formset,
-        "titulo": "Editar Producto"
+        "titulo": "Editar Producto",
     })
+
 @login_required
 def eliminar_producto(request, pk):
     producto = get_object_or_404(ProductoTerminado, pk=pk)
@@ -374,3 +385,9 @@ def get_receta(request, producto_id):
         'cantidad'  # cantidad por unidad de producto
     )
     return JsonResponse(list(receta), safe=False)
+
+def get_materias_primas(request):
+    materias = MateriaPrima.objects.all().order_by('nombre').values(
+        'id', 'nombre', 'unidad', 'cantidad', 'costo'
+    )
+    return JsonResponse(list(materias), safe=False)
