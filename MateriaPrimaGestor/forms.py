@@ -60,8 +60,25 @@ DetalleProductoFormSet = inlineformset_factory(
     can_delete=True
 )
 
+class ProduccionAjusteForm(forms.Form):
+    TIPO = (
+        ("SUMAR", "Agregar"),
+        ("RESTAR", "Quitar"),
+    )
+
+    tipo = forms.ChoiceField(choices=TIPO, label="Tipo de ajuste")
+
+    cantidad = forms.IntegerField(
+        min_value=1,
+        label="Cantidad de unidades"
+    )
+
 # produccion 
 class ProduccionForm(forms.ModelForm):
     class Meta:
         model = ProduccionProducto
-        fields = ["producto", "cantidad"]
+        fields = ["producto", "cantidad", "cantidad_unidad"]
+        labels = {
+            "cantidad": "Cantidad de bulk",
+            "cantidad_unidad": "Cantidad de producto"
+        }

@@ -41,6 +41,7 @@
             </tbody>
         </table>
         <p id="costo-total">Costo Total Estimado: 0.00</p>
+        <p id="costo-unidad">Costo Unidad Estimada: 0.00</p>
     </div>
 
 </div>
@@ -50,8 +51,10 @@
         const form = document.getElementById('produccion-form');
         const productoSelect = form.querySelector('#id_producto');
         const cantidadInput = form.querySelector('#id_cantidad');
+        const cantidadUnidadInput = form.querySelector('#id_cantidad_unidad');
         const tableBody = document.querySelector('#consumos-table tbody');
         const costoTotalElem = document.getElementById('costo-total');
+        const costoUnidadElem = document.getElementById('costo-unidad');
         const accionesForm = document.getElementById('acciones-form');
 
         let recetaData = []; // Datos de receta
@@ -74,6 +77,7 @@
 
         function actualizarPreview() {
             const cantidad = parseFloat(cantidadInput.value) || 0;
+            const cantidadUnidad = parseInt(cantidadUnidadInput.value) || 1;
             tableBody.innerHTML = '';
             let costoTotal = 0;
             let ocultarDatos = false;
@@ -109,6 +113,7 @@
             }
 
             costoTotalElem.textContent = `Costo Total Estimado: ${costoTotal.toFixed(2)}`;
+            costoUnidadElem.textContent = `Costo Unitario Estimado: ${(costoTotal/cantidadUnidad).toFixed(2)}`;
         }
 
         productoSelect.addEventListener('change', function () {
@@ -116,6 +121,7 @@
         });
 
         cantidadInput.addEventListener('input', actualizarPreview);
+        cantidadUnidadInput.addEventListener('input', actualizarPreview);
 
         // Cargar inicial si es edición
         if (productoSelect.value) {

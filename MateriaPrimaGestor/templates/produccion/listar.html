@@ -27,11 +27,14 @@
             <tr>
                 <td>{{ p.codigo }}</td>
                 <td>{{ p.producto.nombre }}</td>
-                <td>{{ p.cantidad }}</td>
+                <td>{{ p.cantidad_unidad }}</td>
                 <td>{{ p.fecha_creacion }}</td>
                 <td class="acciones">
                     <a href="{% url 'editar_produccion' p.codigo %}" class="btn btn-edit">
                         Editar
+                    </a>
+                    <a href="{% url 'ajustar_produccion' p.codigo %}" class="btn btn-produce">
+                        Ajustar
                     </a>
                     <a href="{% url 'eliminar_produccion' p.codigo %}" class="btn btn-delete">
                         Eliminar

@@ -268,6 +268,7 @@ def crear_produccion(request):
     if request.method == "POST" and form.is_valid():
         producto = form.cleaned_data["producto"]
         cantidad_producir = form.cleaned_data["cantidad"]
+        cantidad_unidad = form.cleaned_data["cantidad_unidad"]
         receta = DetalleProducto.objects.filter(producto=producto)
 
         if not receta.exists():
@@ -283,7 +284,7 @@ def crear_produccion(request):
 
         # GUARDAR
         produccion = form.save()
-        producto.cantidad += cantidad_producir
+        producto.cantidad += cantidad_unidad
         producto.save()
 
         costo_total = Decimal("0")
@@ -316,6 +317,7 @@ def editar_produccion(request, pk):
     if request.method == "POST" and form.is_valid():
         producto = form.cleaned_data["producto"]
         nueva_cantidad = form.cleaned_data["cantidad"]
+        cantidad_unidad = form.cleaned_data["cantidad_unidad"]
         receta = DetalleProducto.objects.filter(producto=producto)
 
         if not receta.exists():
@@ -340,13 +342,13 @@ def editar_produccion(request, pk):
             det.materia_prima.cantidad += det.cantidad
             det.materia_prima.save()
 
-        produccion.producto.cantidad -= produccion.cantidad
+        produccion.producto.cantidad -= produccion.cantidad_unidad
         produccion.producto.save()
         detalles_anteriores.delete()
 
         # 3. GUARDAR Y APLICAR NUEVA PRODUCCIÓN
         produccion = form.save()
-        produccion.producto.cantidad += nueva_cantidad
+        produccion.producto.cantidad += cantidad_unidad
         produccion.producto.save()
 
         for item in receta:
@@ -376,6 +378,27 @@ def eliminar_produccion(request, pk):
         return redirect("listar_producciones")
     return render(request, "produccion/eliminar.html", {"produccion": produccion})
 
+@login_required
+def ajustar_produccion(request, pk):
+    produccion = get_object_or_404(ProduccionProducto, pk=pk)
+    form = ProduccionAjusteForm(request.POST or None)
+    if form.is_valid():
+        cantidad = form.cleaned_data["cantidad"]
+        tipo = form.cleaned_data["tipo"]
+        if tipo == "SUMAR":
+            produccion.cantidad_unidad += cantidad
+        else:
+            if cantidad > produccion.cantidad_unidad:
+                messages.error(request, "No puedes dejar unidades negativas.")
+                return redirect("ajustar_produccion", pk=pk)
+            produccion.cantidad_unidad -= cantidad
+        produccion.save()
+        messages.success(request, "Unidades actualizadas correctamente.")
+        return redirect("listar_producciones")
+
+    return render( request, "produccion/ajustar.html",{ "form": form, "produccion": produccion} )
+
+# APIS json
 def get_receta(request, producto_id):
     receta = DetalleProducto.objects.filter(producto_id=producto_id).values(
         'materia_prima__nombre',

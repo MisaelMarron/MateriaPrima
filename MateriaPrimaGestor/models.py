@@ -63,6 +63,7 @@ class ProduccionProducto(models.Model):
     codigo = models.AutoField(primary_key=True)
     producto = models.ForeignKey(ProductoTerminado, on_delete=models.PROTECT)
     cantidad = models.DecimalField(max_digits=12, decimal_places=5, validators=[MinValueValidator(0)])
+    cantidad_unidad = models.IntegerField(validators=[MinValueValidator(0)])
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 
 class ProduccionDetalle(models.Model):
