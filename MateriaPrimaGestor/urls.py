@@ -28,12 +28,13 @@ urlpatterns = [
     path("productos/crear/", views.crear_producto, name="crear_producto"),
     path("productos/<int:pk>/editar/", views.editar_producto, name="editar_producto"),
     path("productos/<int:pk>/eliminar/", views.eliminar_producto, name="eliminar_producto"),
+    path("productos/<int:pk>/ajustar/", views.ajustar_producto, name="ajustar_producto"),
     # CRUD de produccion
     path("produccion/", views.listar_producciones, name="listar_producciones"),
     path("produccion/crear/", views.crear_produccion, name="crear_produccion"),
     path("produccion/<int:pk>/editar/", views.editar_produccion, name="editar_produccion"),
     path("produccion/<int:pk>/eliminar/", views.eliminar_produccion, name="eliminar_produccion"),
-    path("produccion/<int:pk>/ajustar/", views.ajustar_produccion, name="ajustar_produccion"),
+    #path("produccion/<int:pk>/ajustar/", views.ajustar_produccion, name="ajustar_produccion"),
     path('get_receta/<int:producto_id>/', views.get_receta, name='get_receta'),
     path('get_materias_primas/', views.get_materias_primas, name='get_materias_primas'),
 ]

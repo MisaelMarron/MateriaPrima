@@ -60,6 +60,14 @@ DetalleProductoFormSet = inlineformset_factory(
     can_delete=True
 )
 
+class ProductoAjusteForm(forms.Form):
+    TIPO = (
+        ("SUMAR", "Agregar"),
+        ("RESTAR", "Quitar"),
+    )
+    tipo = forms.ChoiceField(choices=TIPO, label="Tipo de ajuste")
+    cantidad = forms.DecimalField(min_value=0.00001, max_digits=12, decimal_places=5)
+# produccion 
 class ProduccionAjusteForm(forms.Form):
     TIPO = (
         ("SUMAR", "Agregar"),
@@ -73,7 +81,6 @@ class ProduccionAjusteForm(forms.Form):
         label="Cantidad de unidades"
     )
 
-# produccion 
 class ProduccionForm(forms.ModelForm):
     class Meta:
         model = ProduccionProducto

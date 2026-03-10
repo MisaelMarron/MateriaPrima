@@ -250,6 +250,7 @@ def eliminar_producto(request, pk):
         return redirect("listar_productos")
 
     return render(request, "producto/eliminar.html", {"producto": producto})
+
 ############## CRUD de produccion
 @login_required
 def listar_producciones(request):
@@ -379,24 +380,23 @@ def eliminar_produccion(request, pk):
     return render(request, "produccion/eliminar.html", {"produccion": produccion})
 
 @login_required
-def ajustar_produccion(request, pk):
-    produccion = get_object_or_404(ProduccionProducto, pk=pk)
-    form = ProduccionAjusteForm(request.POST or None)
+def ajustar_producto(request, pk):
+    producto = get_object_or_404(ProductoTerminado, pk=pk)
+    form = ProductoAjusteForm(request.POST or None)
     if form.is_valid():
         cantidad = form.cleaned_data["cantidad"]
         tipo = form.cleaned_data["tipo"]
         if tipo == "SUMAR":
-            produccion.cantidad_unidad += cantidad
+            producto.cantidad += cantidad
         else:
-            if cantidad > produccion.cantidad_unidad:
-                messages.error(request, "No puedes dejar unidades negativas.")
-                return redirect("ajustar_produccion", pk=pk)
-            produccion.cantidad_unidad -= cantidad
-        produccion.save()
-        messages.success(request, "Unidades actualizadas correctamente.")
-        return redirect("listar_producciones")
-
-    return render( request, "produccion/ajustar.html",{ "form": form, "produccion": produccion} )
+            if cantidad > producto.cantidad:
+                messages.error(request, "No puedes dejar stock negativo.")
+                return redirect("ajustar_producto", pk=pk)
+            producto.cantidad -= cantidad
+        producto.save()
+        messages.success(request, "Stock actualizado correctamente.")
+        return redirect("listar_productos")
+    return render(request, "producto/ajustar.html", {"form": form, "producto": producto})
 
 # APIS json
 def get_receta(request, producto_id):

@@ -28,12 +28,9 @@
                 <td>{{ p.nombre }}</td>
                 <td>{{ p.cantidad }}</td>
                 <td class="acciones">
-                    <a href="{% url 'editar_producto' p.id %}" class="btn btn-edit">
-                        Editar
-                    </a>
-                    <a href="{% url 'eliminar_producto' p.id %}" class="btn btn-delete">
-                        Eliminar
-                    </a>
+                    <a href="{% url 'editar_producto' p.id %}" class="btn btn-edit"> Editar </a>
+                    <a href="{% url 'ajustar_producto' p.id %}" class="btn btn-produce">Ajustar</a>
+                    <a href="{% url 'eliminar_producto' p.id %}" class="btn btn-delete"> Eliminar </a>
                 </td>
             </tr>
             {% empty %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Ajustar Producto{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2 class="form-title">Ajustar Stock</h2>
+
+    <p style="text-align:center; margin-bottom:1rem;">
+        <strong>{{ producto.nombre }}</strong>
+    </p>
+
+    <p style="text-align:center; margin-bottom:1.5rem;">
+        Unidades actuales: <strong>{{ producto.cantidad }}</strong>
+    </p>
+
+    <form method="post" class="form-box">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="acciones-form">
+            <button type="submit" class="btn btn-produce">
+                Aplicar
+            </button>
+            <a href="{% url 'listar_productos' %}" class="btn btn-delete">
+                Cancelar
+            </a>
+
+        </div>
+    </form>
+</div>
+{% endblock %}
