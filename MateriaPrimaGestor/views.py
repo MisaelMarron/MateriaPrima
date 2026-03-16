@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
+from django.utils import timezone
 from django.db import transaction
 from decimal import Decimal, ROUND_HALF_UP
 from xhtml2pdf import pisa
@@ -95,10 +96,14 @@ def listar_materias(request):
 @login_required
 def materias_pdf(request):
     materias = MateriaPrima.objects.all().order_by("codigo")
+    fecha_hora = timezone.localtime().strftime("%d/%m/%Y %H:%M")
     template = get_template("materia/pdf_materias.html")
-    html = template.render({"materias": materias})
+    html = template.render({
+        "materias": materias,
+        "fecha_hora": fecha_hora,
+    })
     response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = "attachment; filename=materias.pdf"
+    response["Content-Disposition"] = "attachment; filename=inventario_materias.pdf"
     pisa.CreatePDF(html, dest=response)
     return response
 
@@ -213,10 +218,14 @@ def listar_productos(request):
 @login_required
 def productos_pdf(request):
     productos = ProductoTerminado.objects.all().order_by("codigo")
+    fecha_hora = timezone.localtime().strftime("%d/%m/%Y %H:%M")
     template = get_template("producto/pdf_productos.html")
-    html = template.render({"productos": productos})
+    html = template.render({
+        "productos": productos,
+        "fecha_hora": fecha_hora,
+    })
     response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = "attachment; filename=productos.pdf"
+    response["Content-Disposition"] = "attachment; filename=inventario_productos.pdf"
     pisa.CreatePDF(html, dest=response)
     return response
 
