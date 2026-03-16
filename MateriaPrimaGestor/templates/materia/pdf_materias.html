@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: Arial;
+        }
+        h1 {
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th,
+        td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background: #f2f2f2;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <h1>Listado de Materias Primas</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Unidad</th>
+                <th>Cantidad</th>
+                <th>Costo</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for m in materias %}
+            <tr>
+                <td>{{ m.codigo }}</td>
+                <td>{{ m.nombre }}</td>
+                <td>{{ m.unidad }}</td>
+                <td>{{ m.cantidad }}</td>
+                <td>S/. {{ m.costo }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+
+</body>
+
+</html>

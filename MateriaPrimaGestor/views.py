@@ -1,11 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.template.loader import get_template
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.db import transaction
 from decimal import Decimal, ROUND_HALF_UP
+from xhtml2pdf import pisa
 from .forms import *
 from .models import *
 
@@ -89,6 +91,16 @@ def eliminar_proveedor(request, pk):
 def listar_materias(request):
     materias = MateriaPrima.objects.all().order_by("codigo")
     return render(request, "materia/listar.html", {"materias": materias})
+
+@login_required
+def materias_pdf(request):
+    materias = MateriaPrima.objects.all().order_by("codigo")
+    template = get_template("materia/pdf_materias.html")
+    html = template.render({"materias": materias})
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = "attachment; filename=materias.pdf"
+    pisa.CreatePDF(html, dest=response)
+    return response
 
 @login_required
 def crear_materia(request):
@@ -197,6 +209,16 @@ def eliminar_compra(request, pk):
 def listar_productos(request):
     productos = ProductoTerminado.objects.all().order_by("codigo")
     return render(request, "producto/listar.html", {"productos": productos})
+
+@login_required
+def productos_pdf(request):
+    productos = ProductoTerminado.objects.all().order_by("codigo")
+    template = get_template("producto/pdf_productos.html")
+    html = template.render({"productos": productos})
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = "attachment; filename=productos.pdf"
+    pisa.CreatePDF(html, dest=response)
+    return response
 
 @login_required
 def crear_producto(request):
