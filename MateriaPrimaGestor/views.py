@@ -4,13 +4,21 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout
 from django.contrib import messages
+from django.conf import settings
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.db import transaction
 from decimal import Decimal, ROUND_HALF_UP
 from xhtml2pdf import pisa
+from openpyxl import load_workbook
+from openpyxl.utils import get_column_letter
+from openpyxl.cell import MergedCell
+from datetime import datetime
+from decimal import Decimal, ROUND_HALF_UP
+from copy import copy
 from .forms import *
 from .models import *
+import os
 
 def inicio(request):
     return render(request, "inicio.html")
@@ -261,9 +269,6 @@ def editar_producto(request, pk):
             messages.success(request, "Receta actualizada correctamente.")
             return redirect("listar_productos")
         else:
-            print("FORM ERRORS:", form.errors)
-            print("FORMSET ERRORS:", formset.errors)
-            print("FORMSET NON FORM:", formset.non_form_errors())
             messages.error(request, "Corrige los errores del formulario.")
     return render(request, "producto/form.html", {
         "form": form,
@@ -428,6 +433,102 @@ def ajustar_producto(request, pk):
         messages.success(request, "Stock actualizado correctamente.")
         return redirect("listar_productos")
     return render(request, "producto/ajustar.html", {"form": form, "producto": producto})
+
+@login_required
+def exportar_produccion_excel(request, pk):
+    # Datos
+    produccion = get_object_or_404(ProduccionProducto, pk=pk)
+    detalles = list(ProduccionDetalle.objects.filter(produccion=produccion))
+    codigo = f'PR-PRO-{produccion.codigo:03d}'
+
+    # Cargar plantilla
+    ruta = os.path.join(settings.BASE_DIR, 'templates', 'PLANTILLA.xlsx')
+    wb = load_workbook(ruta)
+    ws = wb["PRODUCCION"]
+
+    # === METADATOS ===
+    ws["H1"] = codigo
+    ws["H2"] = "1"
+    ws["H3"] = datetime.now().strftime("%d/%m/%Y")
+    ws["H4"] = "1 de 1"
+    ws["H5"] = produccion.fecha_creacion.strftime("%d/%m/%Y")
+    ws["E5"] = produccion.producto.codigo
+    ws["C6"] = produccion.producto.nombre
+    ws["C7"] = ""
+    ws["E7"] = produccion.cantidad
+
+    # === PARTE DINÁMICA ===
+    fila_inicio = 9
+    cantidad = len(detalles)
+
+    if cantidad > 1:
+        cantidad_a_insertar = cantidad - 1
+
+        # 1. Desplazar merges que estén debajo (fila 10 al 30 y más abajo)
+        for merged in list(ws.merged_cells.ranges):
+            if merged.min_row >= fila_inicio + 1:
+                merged.shift(row_shift=cantidad_a_insertar)
+
+        # 2. Insertar filas vacías
+        ws.insert_rows(fila_inicio + 1, amount=cantidad_a_insertar)
+
+        # 3. Copiar SOLO formato (incluyendo dentro de merges como E:F)
+        for offset in range(1, cantidad):
+            fila_nueva = fila_inicio + offset
+
+            # Altura de fila
+            ws.row_dimensions[fila_nueva].height = ws.row_dimensions[fila_inicio].height
+
+            # Copiar estilos celda por celda (CORREGIDO para merges)
+            for col in range(1, ws.max_column + 1):
+                src_cell = ws.cell(row=fila_inicio, column=col)
+                dst_cell = ws.cell(row=fila_nueva, column=col)
+
+                dst_cell.value = None
+
+                # Si es celda combinada, tomamos el estilo real del top-left
+                if isinstance(src_cell, MergedCell):
+                    for m in list(ws.merged_cells.ranges):
+                        if (m.min_row == fila_inicio and 
+                            m.min_col <= col <= m.max_col):
+                            src_cell = ws.cell(row=m.min_row, column=m.min_col)
+                            break
+
+                if src_cell.has_style:
+                    dst_cell.font = copy(src_cell.font)
+                    dst_cell.border = copy(src_cell.border)
+                    dst_cell.fill = copy(src_cell.fill)
+                    dst_cell.number_format = src_cell.number_format
+                    dst_cell.protection = copy(src_cell.protection)
+                    dst_cell.alignment = copy(src_cell.alignment)
+
+    # 4. Replicar merges horizontales (E:F y cualquier otro) SOLO en las filas nuevas
+    for offset in range(1, cantidad):
+        fila = fila_inicio + offset
+        for merged in list(ws.merged_cells.ranges):
+            if merged.min_row == fila_inicio and merged.max_row == fila_inicio:
+                start = get_column_letter(merged.min_col)
+                end = get_column_letter(merged.max_col)
+                ws.merge_cells(f"{start}{fila}:{end}{fila}")
+
+    # 5. Rellenar datos reales
+    for idx, det in enumerate(detalles, start=fila_inicio):
+        fila = idx
+        ws[f"A{fila}"] = idx - fila_inicio + 1
+        ws[f"B{fila}"] = det.materia_prima.codigo
+        ws[f"C{fila}"] = det.materia_prima.nombre
+        ws[f"D{fila}"] = det.cantidad
+        valor = (det.cantidad * produccion.cantidad).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
+        ws[f"E{fila}"] = float(valor)
+        ws[f"G{fila}"] = float(valor*1000)
+
+    # === DESCARGA ===
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="Produccion_{codigo}.xlsx"'
+    wb.save(response)
+    return response
 
 # APIS json
 def get_receta(request, producto_id):
