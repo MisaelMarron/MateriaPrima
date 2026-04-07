@@ -22,7 +22,9 @@
                 <th>Nombre</th>
                 <th>Unidad</th>
                 <th>Stock</th>
+                {% if user.is_superuser %}
                 <th>Costo</th>
+                {% endif %}
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -33,7 +35,9 @@
                 <td>{{ m.nombre }}</td>
                 <td>{{ m.unidad }}</td>
                 <td>{{ m.cantidad }}</td>
+                {% if user.is_superuser %}
                 <td>{{ m.costo }}</td>
+                {% endif %}
                 <td class="acciones">
                     <a href="{% url 'editar_materia' m.id %}" class="btn btn-edit">Editar</a>
                     <a href="{% url 'ajustar_materia' m.id %}" class="btn btn-produce">Ajustar</a>

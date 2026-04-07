@@ -40,8 +40,10 @@
                 <!-- Inicialmente vacía -->
             </tbody>
         </table>
+        {% if user.is_superuser %}
         <p id="costo-total">Costo Total Estimado: 0.00</p>
         <p id="costo-unidad">Costo Unidad Estimada: 0.00</p>
+        {% endif %}
     </div>
 
 </div>
@@ -111,9 +113,8 @@
             } else {
                 accionesForm.style.display = 'flex';
             }
-
-            costoTotalElem.textContent = `Costo Total Estimado: ${costoTotal.toFixed(2)}`;
-            costoUnidadElem.textContent = `Costo Unitario Estimado: ${(costoTotal/cantidadUnidad).toFixed(2)}`;
+            if (costoTotalElem) costoTotalElem.textContent = `Costo Total Estimado: ${costoTotal.toFixed(2)}`;
+            if (costoUnidadElem) costoUnidadElem.textContent = `Costo Unitario Estimado: ${(costoTotal/cantidadUnidad).toFixed(2)}`;
         }
 
         productoSelect.addEventListener('change', function () {

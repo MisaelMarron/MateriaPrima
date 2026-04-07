@@ -583,7 +583,7 @@
 </div>
 
 <script>
-    (function () {
+    /*(function () {
         const body = document.getElementById('receta-body');
         const emptyState = document.getElementById('empty-state');
         const recetaTable = document.getElementById('receta-table');
@@ -724,6 +724,204 @@
         overlay.addEventListener('click', function (e) { if (e.target === overlay) closeModal(); });
         searchInput.addEventListener('input', function () { renderModalList(this.value); });
         document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+
+        checkEmpty();
+    })();*/
+    (function () {
+        const body = document.getElementById('receta-body');
+        const emptyState = document.getElementById('empty-state');
+        const recetaTable = document.getElementById('receta-table');
+        const totalInput = document.getElementById('id_detalleproducto_set-TOTAL_FORMS');
+        const overlay = document.getElementById('modal-overlay');
+        const modalList = document.getElementById('modal-list');
+        const searchInput = document.getElementById('modal-search');
+
+        let totalForms = parseInt(totalInput.value, 10) || 0;
+        let allMaterias = [];
+
+        fetch('/get_materias_primas/')
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                allMaterias = Array.isArray(data) ? data : [];
+            })
+            .catch(function () {
+                allMaterias = [];
+            });
+
+        function closeModal() {
+            overlay.classList.remove('open');
+        }
+
+        function usedIds() {
+            const used = new Set();
+            body.querySelectorAll('tr.receta-row').forEach(function (row) {
+                if (row.style.display !== 'none' && row.dataset.mpId) {
+                    used.add(String(row.dataset.mpId));
+                }
+            });
+            return used;
+        }
+
+        function checkEmpty() {
+            const rows = Array.from(body.querySelectorAll('tr.receta-row'));
+            const visible = rows.filter(function (row) {
+                return row.style.display !== 'none';
+            }).length;
+
+            emptyState.style.display = visible === 0 ? 'block' : 'none';
+            recetaTable.style.display = visible === 0 ? 'none' : 'table';
+        }
+
+        function renderModalList(query) {
+            const used = usedIds();
+            const q = (query || '').toLowerCase();
+
+            const available = allMaterias.filter(function (mp) {
+                const nombre = (mp.nombre || '').toLowerCase();
+                return !used.has(String(mp.id)) && nombre.includes(q);
+            });
+
+            if (available.length === 0) {
+                modalList.innerHTML = '<div class="modal-empty">No hay materias disponibles.</div>';
+                return;
+            }
+
+            modalList.innerHTML = '';
+
+            available.forEach(function (mp) {
+                const div = document.createElement('div');
+                div.className = 'modal-item';
+                div.innerHTML =
+                    '<div>' +
+                    '<div class="mp-nombre">' + mp.nombre + '</div>' +
+                    '<div class="mp-meta">' + mp.unidad + ' &mdash; stock: ' + parseFloat(mp.cantidad).toFixed(2) + '</div>' +
+                    '</div>' +
+                    '<span class="mp-add">+ Agregar</span>';
+
+                div.addEventListener('click', function () {
+                    addRow(mp);
+                });
+
+                modalList.appendChild(div);
+            });
+        }
+
+        function findHiddenRowByMateriaId(mpId) {
+            const rows = body.querySelectorAll('tr.receta-row');
+
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                if (row.style.display === 'none') {
+                    const mpInput = row.querySelector('input[name$="-materia_prima"]');
+                    if (mpInput && mpInput.value === String(mpId)) {
+                        return row;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        function restoreRow(row, mp) {
+            body.appendChild(row);
+            row.style.display = '';
+            row.dataset.mpId = String(mp.id);
+
+            const deleteFlag = row.querySelector('.delete-flag');
+            if (deleteFlag) {
+                deleteFlag.value = '';
+            }
+
+            const qtyInput = row.querySelector('input[type="number"]');
+            if (qtyInput) {
+                qtyInput.focus();
+            }
+
+            closeModal();
+            checkEmpty();
+        }
+
+        function addRow(mp) {
+            const hiddenRow = findHiddenRowByMateriaId(mp.id);
+            if (hiddenRow) {
+                restoreRow(hiddenRow, mp);
+                return;
+            }
+
+            const idx = totalForms;
+            const tr = document.createElement('tr');
+            tr.className = 'receta-row';
+            tr.dataset.mpId = String(mp.id);
+            tr.dataset.rowId = '';
+
+            tr.innerHTML =
+                '<input type="hidden" name="detalleproducto_set-' + idx + '-codigo" value="">' +
+                '<input type="hidden" name="detalleproducto_set-' + idx + '-materia_prima" value="' + mp.id + '">' +
+                '<input type="hidden" name="detalleproducto_set-' + idx + '-DELETE" value="" class="delete-flag">' +
+                '<td class="nombre-cell">' +
+                mp.nombre +
+                '<span class="unidad-tag">' + mp.unidad + '</span>' +
+                '</td>' +
+                '<td>' +
+                '<input type="number" step="0.00001" min="0"' +
+                ' name="detalleproducto_set-' + idx + '-cantidad"' +
+                ' id="id_detalleproducto_set-' + idx + '-cantidad"' +
+                ' placeholder="0.00000">' +
+                '</td>' +
+                '<td>' +
+                '<button type="button" class="btn-icon delete-row-btn" title="Eliminar">&#x2715;</button>' +
+                '</td>';
+
+            body.appendChild(tr);
+            totalForms++;
+            totalInput.value = String(totalForms);
+
+            const numberInput = tr.querySelector('input[type="number"]');
+            if (numberInput) {
+                numberInput.focus();
+            }
+
+            closeModal();
+            checkEmpty();
+        }
+
+        body.addEventListener('click', function (e) {
+            const btn = e.target.closest('.delete-row-btn');
+            if (!btn) return;
+
+            const row = btn.closest('tr.receta-row');
+            if (!row) return;
+
+            const deleteFlag = row.querySelector('.delete-flag');
+            if (deleteFlag) {
+                deleteFlag.value = 'on';
+            }
+
+            row.style.display = 'none';
+            row.dataset.mpId = '';
+            checkEmpty();
+        });
+
+        document.getElementById('open-modal-btn').addEventListener('click', function () {
+            searchInput.value = '';
+            renderModalList('');
+            overlay.classList.add('open');
+            searchInput.focus();
+        });
+
+        document.getElementById('modal-close').addEventListener('click', closeModal);
+
+        overlay.addEventListener('click', function (e) {
+            if (e.target === overlay) closeModal();
+        });
+
+        searchInput.addEventListener('input', function () {
+            renderModalList(this.value);
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeModal();
+        });
 
         checkEmpty();
     })();
