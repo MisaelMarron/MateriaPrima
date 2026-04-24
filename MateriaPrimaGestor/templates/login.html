@@ -2,26 +2,46 @@
 {% block title %}Login{% endblock %}
 
 {% block content %}
-<div class="form-container">
-    <h2 class="form-title">Iniciar Sesión</h2>
-    <form method="post" class="form-box">
-        {% csrf_token %}
+<div class="login-wrapper">
+    <div class="login-blob blob-1"></div>
+    <div class="login-blob blob-2"></div>
 
-        <div class="input-group">
-            {{ form.username }}
-            <label for="{{ form.username.id_for_label }}">Nombre de usuario</label>
+    <div class="login-glass-card">
+        <div class="login-header">
+            <h2 class="login-title">Bienvenido de Nuevo</h2>
+            <p class="login-subtitle">Ingresa tus credenciales para continuar</p>
         </div>
 
-        <div class="input-group">
-            {{ form.password }}
-            <label for="{{ form.password.id_for_label }}">Contraseña</label>
+        <form method="post" class="login-form">
+            {% csrf_token %}
+
+            <div class="login-input-group">
+                {{ form.username }}
+                <label for="{{ form.username.id_for_label }}">Usuario</label>
+            </div>
+
+            <div class="login-input-group">
+                {{ form.password }}
+                <label for="{{ form.password.id_for_label }}">Contraseña</label>
+            </div>
+
+            <button type="submit" class="login-btn">
+                <span>Ingresar</span>
+            </button>
+        </form>
+
+        <div class="login-footer">
+            <p>¿No tienes cuenta? <a href="{% url 'register' %}" class="login-link">Regístrate aquí</a></p>
         </div>
-
-        <button type="submit" class="btn-primary">Entrar</button>
-    </form>
-
-    <p class="form-link">
-        ¿No tienes cuenta? <a href="{% url 'register' %}">Registrarme</a>
-    </p>
+    </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const inputs = document.querySelectorAll('.login-input-group input');
+        inputs.forEach(input => {
+            input.setAttribute('placeholder', ' ');
+        });
+    });
+</script>
 {% endblock %}

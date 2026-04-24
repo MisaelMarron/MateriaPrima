@@ -2,15 +2,54 @@
 {% block title %} Registro {% endblock %}
 
 {% block content %}
-<div class="form-container">
-    <h2 class="form-title">Registro</h2>
-    <form method="post" class="form-box">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn-primary">Registrarse</button>
-    </form>
-    <p class="form-link">
-        ¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia sesión</a>
-    </p>
+<div class="login-wrapper">
+    <div class="login-blob blob-1"></div>
+    <div class="login-blob blob-2"></div>
+
+    <div class="login-glass-card">
+        <div class="login-header">
+            <h2 class="login-title">Crear Cuenta</h2>
+            <p class="login-subtitle">Regístrate para empezar a utilizar la plataforma</p>
+        </div>
+
+        <form method="post" class="login-form">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div style="color: var(--danger); font-size: 0.9rem; text-align: center; margin-bottom: 1rem;">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            {% for field in form %}
+            <div class="login-input-group">
+                {{ field }}
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            </div>
+            {% if field.errors %}
+            <div style="color: var(--danger); font-size: 0.8rem; margin-top: -1.4rem; padding-left: 0.5rem;">
+                {{ field.errors|striptags }}
+            </div>
+            {% endif %}
+            {% endfor %}
+
+            <button type="submit" class="login-btn">
+                <span>Registrarse</span>
+            </button>
+        </form>
+
+        <div class="login-footer">
+            <p>¿Ya tienes cuenta? <a href="{% url 'login' %}" class="login-link">Inicia sesión</a></p>
+        </div>
+    </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const inputs = document.querySelectorAll('.login-input-group input');
+        inputs.forEach(input => {
+            input.setAttribute('placeholder', ' ');
+        });
+    });
+</script>
 {% endblock %}
