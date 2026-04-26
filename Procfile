@@ -1,1 +1,1 @@
-web: gunicorn MateriaPrima.wsgi --log-file -
+web: gunicorn MateriaPrima.wsgi
