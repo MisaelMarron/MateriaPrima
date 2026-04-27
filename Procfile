@@ -1,1 +1,1 @@
-web: python manage.py migrate && python manage.py createsuperuser --noinput || true && gunicorn MateriaPrima.wsgi
+web: python manage.py migrate --noinput || true && python manage.py shell -c "from django.contrib.auth import get_user_model; User=get_user_model(); User.objects.filter(username='QiwaRenase').exists() or User.objects.create_superuser('QiwaRenase','QiwaRenase1@gmail.com','Qiwa2026')" || true && gunicorn MateriaPrima.wsgi
