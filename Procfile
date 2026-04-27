@@ -1,1 +1,1 @@
-web: gunicorn MateriaPrima.wsgi
+web: python manage.py collectstatic --noinput && gunicorn MateriaPrima.wsgi
