@@ -9,12 +9,12 @@ from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.db import transaction
 from decimal import Decimal, ROUND_HALF_UP
-from xhtml2pdf import pisa
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
 from openpyxl.cell import MergedCell
 from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
+from reportlab.pdfgen import canvas
 from copy import copy
 from .forms import *
 from .models import *
@@ -104,15 +104,26 @@ def listar_materias(request):
 @login_required
 def materias_pdf(request):
     materias = MateriaPrima.objects.all().order_by("codigo")
-    fecha_hora = timezone.localtime().strftime("%d/%m/%Y %H:%M")
-    template = get_template("materia/pdf_materias.html")
-    html = template.render({
-        "materias": materias,
-        "fecha_hora": fecha_hora,
-    })
+
     response = HttpResponse(content_type="application/pdf")
     response["Content-Disposition"] = "attachment; filename=inventario_materias.pdf"
-    pisa.CreatePDF(html, dest=response)
+
+    p = canvas.Canvas(response)
+
+    y = 800
+    p.drawString(200, y, "REPORTE DE MATERIAS PRIMAS")
+    y -= 40
+
+    for m in materias:
+        texto = f"{m.codigo} - {m.nombre} - Stock: {m.cantidad}"
+        p.drawString(50, y, texto)
+        y -= 20
+
+        if y < 50:
+            p.showPage()
+            y = 800
+
+    p.save()
     return response
 
 @login_required
@@ -226,15 +237,26 @@ def listar_productos(request):
 @login_required
 def productos_pdf(request):
     productos = ProductoTerminado.objects.all().order_by("codigo")
-    fecha_hora = timezone.localtime().strftime("%d/%m/%Y %H:%M")
-    template = get_template("producto/pdf_productos.html")
-    html = template.render({
-        "productos": productos,
-        "fecha_hora": fecha_hora,
-    })
+
     response = HttpResponse(content_type="application/pdf")
     response["Content-Disposition"] = "attachment; filename=inventario_productos.pdf"
-    pisa.CreatePDF(html, dest=response)
+
+    p = canvas.Canvas(response)
+
+    y = 800
+    p.drawString(200, y, "REPORTE DE PRODUCTOS")
+    y -= 40
+
+    for pdt in productos:
+        texto = f"{pdt.codigo} - {pdt.nombre} - Stock: {pdt.cantidad}"
+        p.drawString(50, y, texto)
+        y -= 20
+
+        if y < 50:
+            p.showPage()
+            y = 800
+
+    p.save()
     return response
 
 @login_required
