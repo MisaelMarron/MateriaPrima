@@ -1,1 +1,1 @@
-web: python manage.py migrate && python manage.py createsu && python manage.py collectstatic --noinput && gunicorn MateriaPrima.wsgi
+web: python manage.py migrate && python manage.py createsuperuser --noinput || true && gunicorn MateriaPrima.wsgi
